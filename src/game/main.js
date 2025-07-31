@@ -1,7 +1,4 @@
-import { Boot } from "./scenes/Boot";
 import { Game } from "./scenes/Game";
-import { GameOver } from "./scenes/GameOver";
-import { MainMenu } from "./scenes/MainMenu";
 import Phaser from "phaser";
 import { Preloader } from "./scenes/Preloader";
 
@@ -19,9 +16,9 @@ const getGameDimensions = () => {
     let gameWidth = viewportWidth;
     let gameHeight = containerHeight;
 
-    // Set reasonable minimums only
-    gameWidth = Math.max(400, gameWidth);
-    gameHeight = Math.max(300, gameHeight);
+    // Set reasonable minimums as percentage of viewport
+    gameWidth = Math.max(320, gameWidth);
+    gameHeight = Math.max(240, gameHeight);
 
     return { width: gameWidth, height: gameHeight };
 };
@@ -29,8 +26,15 @@ const getGameDimensions = () => {
 const config = {
     type: Phaser.AUTO,
     parent: "game-container",
-    backgroundColor: "#028af8",
-    scene: [Boot, Preloader, MainMenu, Game, GameOver],
+    backgroundColor: "#87CEEB",
+    scene: [Preloader, Game],
+    physics: {
+        default: "arcade",
+        arcade: {
+            gravity: { y: 300 },
+            debug: false,
+        },
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
