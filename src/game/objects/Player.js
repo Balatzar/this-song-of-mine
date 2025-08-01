@@ -28,6 +28,22 @@ export class Player {
 
         // Set up camera following
         this.setupCamera();
+
+        // Dash state management
+        this.isDashing = false;
+        this.dashDirection = 0; // -1 for left, 1 for right, 0 for no direction
+        this.dashTimer = null;
+
+        // Jump state management
+        this.hasJumped = false; // Track if player has jumped to prevent multiple jumps from holding key
+
+        // Simulated key states for sequencer mode
+        this.simulatedKeys = {
+            left: false,
+            right: false,
+            jump: false,
+            dash: false,
+        };
     }
 
     setupPhysics() {
@@ -47,7 +63,6 @@ export class Player {
         );
 
         // Make player more responsive with higher gravity and air resistance
-        // Adjusted for 64px blocks (doubled from previous 32px blocks)
         this.sprite.body.setGravityY(PlayerConfig.gravity); // Faster falling (scaled for larger blocks)
         this.sprite.setDragX(PlayerConfig.dragX); // Quick stopping when not moving
     }
@@ -86,6 +101,32 @@ export class Player {
     setupControls() {
         // Controls will be handled by the scene, but we store reference for access
         this.cursors = this.scene.input.keyboard.createCursorKeys();
+
+        // Add WASD keys
+        this.wasdKeys = {
+            W: this.scene.input.keyboard.addKey(
+                Phaser.Input.Keyboard.KeyCodes.W
+            ),
+            A: this.scene.input.keyboard.addKey(
+                Phaser.Input.Keyboard.KeyCodes.A
+            ),
+            S: this.scene.input.keyboard.addKey(
+                Phaser.Input.Keyboard.KeyCodes.S
+            ),
+            D: this.scene.input.keyboard.addKey(
+                Phaser.Input.Keyboard.KeyCodes.D
+            ),
+        };
+
+        // Add spacebar for jumping
+        this.spaceKey = this.scene.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+        );
+
+        // Add shift key for dashing
+        this.shiftKey = this.scene.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SHIFT
+        );
     }
 
     setupCollisions() {
@@ -105,102 +146,176 @@ export class Player {
     }
 
     /**
-     * Handle sequencer-based movement
+     * Handle sequencer-based movement by simulating key presses
      * @param {Array} activeBeats - Array of boolean values for each drum track
      */
     handleSequencerMovement(activeBeats) {
         // Only process if player exists
         if (!this.sprite) return;
 
-        // Process each drum track action
+        // Clear previous simulated key states
+        this.simulatedKeys.left = false;
+        this.simulatedKeys.right = false;
+        this.simulatedKeys.jump = false;
+        this.simulatedKeys.dash = false;
+
+        // Process each drum track action by setting simulated key states
         // Track indices: [Kick, Snare, Hi-Hat, Open Hat]
 
         // Kick (index 0) = Jump
-        if (activeBeats[0] && this.sprite.body.touching.down) {
-            this.sprite.setVelocityY(PlayerConfig.jumpVelocity); // Same jump strength as manual controls
-            this.sprite.anims.play("jump", true);
-            console.log("Beat action: JUMP");
+        if (activeBeats[0]) {
+            this.simulatedKeys.jump = true;
+            console.log("Beat action: JUMP (simulated)");
         }
 
-        // Snare (index 1) = Nothing for now
+        // Snare (index 1) = Dash
         if (activeBeats[1]) {
-            console.log("Beat action: SNARE (no action)");
+            this.simulatedKeys.dash = true;
+            console.log("Beat action: DASH (simulated)");
         }
 
         // Hi-Hat (index 2) = Go Right
         if (activeBeats[2]) {
-            this.sprite.setVelocityX(PlayerConfig.horizontalSpeed); // Same speed as manual controls
-            this.sprite.anims.play("walk", true);
-            this.sprite.setFlipX(false); // Face right
-            console.log("Beat action: RIGHT");
+            this.simulatedKeys.right = true;
+            console.log("Beat action: RIGHT (simulated)");
         }
 
         // Open Hat (index 3) = Go Left
         if (activeBeats[3]) {
-            this.sprite.setVelocityX(-PlayerConfig.horizontalSpeed); // Same speed as manual controls
-            this.sprite.anims.play("walk", true);
-            this.sprite.setFlipX(true); // Face left
-            console.log("Beat action: LEFT");
-        }
-
-        // If no horizontal movement beats are active, let drag handle stopping
-        if (!activeBeats[2] && !activeBeats[3]) {
-            // Don't explicitly set velocity to 0, let the drag system handle it naturally
-            // This allows for more natural movement between beats
+            this.simulatedKeys.left = true;
+            console.log("Beat action: LEFT (simulated)");
         }
     }
 
     /**
-     * Handle manual player movement
+     * Perform a dash move in the direction the player is facing
+     */
+    performDash() {
+        if (this.isDashing) return; // Prevent multiple dashes
+
+        // Determine dash direction based on player's current facing direction
+        // If player is flipped (facing left), dash left, otherwise dash right
+        this.dashDirection = this.sprite.flipX ? -1 : 1;
+
+        // Set dash state
+        this.isDashing = true;
+
+        // Apply dash velocity
+        this.sprite.setVelocityX(PlayerConfig.dashSpeed * this.dashDirection);
+
+        // Play jump animation as requested
+        this.sprite.anims.play("jump", true);
+
+        // Set timer to end dash
+        if (this.dashTimer) {
+            this.scene.time.removeEvent(this.dashTimer);
+        }
+
+        this.dashTimer = this.scene.time.delayedCall(
+            PlayerConfig.dashDuration,
+            () => {
+                this.endDash();
+            }
+        );
+    }
+
+    /**
+     * End the dash move
+     */
+    endDash() {
+        this.isDashing = false;
+        this.dashDirection = 0;
+
+        // Reduce velocity but don't stop completely to allow for fluid movement
+        if (this.sprite.body) {
+            const currentVel = this.sprite.body.velocity.x;
+            this.sprite.setVelocityX(currentVel * 0.3); // Reduce to 30% of dash speed
+        }
+
+        if (this.dashTimer) {
+            this.scene.time.removeEvent(this.dashTimer);
+            this.dashTimer = null;
+        }
+    }
+
+    /**
+     * Handle manual player movement (now also handles simulated sequencer input)
      */
     handleManualMovement() {
-        // Player movement - adjusted for 64px blocks
-        if (this.cursors.left.isDown) {
-            this.sprite.setVelocityX(-PlayerConfig.horizontalSpeed);
-            this.sprite.anims.play("walk", true);
-            this.sprite.setFlipX(true);
-        } else if (this.cursors.right.isDown) {
-            this.sprite.setVelocityX(PlayerConfig.horizontalSpeed);
-            this.sprite.anims.play("walk", true);
-            this.sprite.setFlipX(false);
-        } else {
-            // Let drag handle stopping for more responsive feel
-            this.sprite.anims.play("idle", true);
+        // Helper functions to check for input combinations (real keys + simulated keys)
+        const isLeftPressed =
+            this.cursors.left.isDown ||
+            this.wasdKeys.A.isDown ||
+            this.simulatedKeys.left;
+        const isRightPressed =
+            this.cursors.right.isDown ||
+            this.wasdKeys.D.isDown ||
+            this.simulatedKeys.right;
+        const isJumpPressed =
+            this.cursors.up.isDown ||
+            this.wasdKeys.W.isDown ||
+            this.spaceKey.isDown ||
+            this.simulatedKeys.jump;
+        const isDashPressed = this.shiftKey.isDown || this.simulatedKeys.dash;
+
+        // Check for dash input (dash key + movement keys, only while airborne)
+        if (
+            isDashPressed &&
+            !this.isDashing &&
+            !this.sprite.body.touching.down
+        ) {
+            if (isLeftPressed) {
+                this.sprite.setFlipX(true); // Face left before dashing
+                this.performDash();
+                return; // Exit early to prevent regular movement
+            } else if (isRightPressed) {
+                this.sprite.setFlipX(false); // Face right before dashing
+                this.performDash();
+                return; // Exit early to prevent regular movement
+            }
+        }
+
+        // Regular player movement - adjusted for 64px blocks
+        // Don't override movement when dashing
+        if (!this.isDashing) {
+            if (isLeftPressed) {
+                this.sprite.setVelocityX(-PlayerConfig.horizontalSpeed);
+                this.sprite.anims.play("walk", true);
+                this.sprite.setFlipX(true);
+            } else if (isRightPressed) {
+                this.sprite.setVelocityX(PlayerConfig.horizontalSpeed);
+                this.sprite.anims.play("walk", true);
+                this.sprite.setFlipX(false);
+            } else {
+                // Let drag handle stopping for more responsive feel
+                this.sprite.anims.play("idle", true);
+            }
         }
 
         // Jumping - adjusted for 64px blocks
-        if (this.cursors.up.isDown && this.sprite.body.touching.down) {
+        // Reset jump flag when on ground and not jumping
+        if (this.sprite.body.touching.down && !isJumpPressed) {
+            this.hasJumped = false;
+        }
+
+        // Only jump if on ground, jump key pressed, and haven't already jumped
+        if (
+            isJumpPressed &&
+            this.sprite.body.touching.down &&
+            !this.hasJumped
+        ) {
             this.sprite.setVelocityY(PlayerConfig.jumpVelocity);
             this.sprite.anims.play("jump", true);
-        }
-    }
-
-    /**
-     * Handle idle animation for sequencer mode
-     */
-    handleSequencerIdle() {
-        // In sequencer mode, show idle animation when no beats are playing
-        // The sequencer step handler will override this when beats are active
-        if (
-            !this.sprite.anims.isPlaying ||
-            (this.sprite.anims.currentAnim &&
-                this.sprite.anims.currentAnim.key !== "walk" &&
-                this.sprite.anims.currentAnim.key !== "jump")
-        ) {
-            this.sprite.anims.play("idle", true);
+            this.hasJumped = true; // Prevent multiple jumps while holding key
         }
     }
 
     /**
      * Update player state - called from scene's update method
-     * @param {boolean} isSequencerMode - Whether sequencer mode is active
+     * Always uses the unified movement logic that handles both real keys and simulated input
      */
-    update(isSequencerMode = false) {
-        if (!isSequencerMode) {
-            this.handleManualMovement();
-        } else {
-            this.handleSequencerIdle();
-        }
+    update() {
+        this.handleManualMovement();
     }
 
     /**
@@ -221,6 +336,12 @@ export class Player {
      * Destroy the player and clean up
      */
     destroy() {
+        // Clean up dash timer
+        if (this.dashTimer) {
+            this.scene.time.removeEvent(this.dashTimer);
+            this.dashTimer = null;
+        }
+
         if (this.sprite) {
             this.sprite.destroy();
         }

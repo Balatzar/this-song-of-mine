@@ -9,6 +9,8 @@ export const PlayerConfig = {
     // Movement speeds
     horizontalSpeed: 380, // Left/right movement speed - increased for faster movement
     jumpVelocity: -850, // Jump strength (negative = upward) - balanced for good height with fast timing
+    dashSpeed: 800, // Dash movement speed - faster than regular horizontal movement
+    dashDuration: 200, // Dash duration in milliseconds
 
     // Collision box settings
     bodyWidth: 64, // Player collision width

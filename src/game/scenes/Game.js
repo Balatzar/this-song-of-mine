@@ -50,12 +50,12 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
-        this.createBlockAt(6, 1, "dirt_block");
-        this.createBlockAt(8, 3, "dirt_block");
+        // this.createBlockAt(6, 1, "dirt_block");
+        // this.createBlockAt(8, 3, "dirt_block");
 
-        this.createBlockAt(11, 1, "dirt_block");
-        this.createBlockAt(12, 2, "dirt_block");
-        this.createBlockAt(13, 3, "dirt_block");
+        // this.createBlockAt(11, 1, "dirt_block");
+        // this.createBlockAt(12, 2, "dirt_block");
+        // this.createBlockAt(13, 3, "dirt_block");
 
         // Create extended floor - cover much more ground for the larger world
         const blocksPerRow = Math.ceil(worldWidth / this.blockSize);
@@ -76,17 +76,17 @@ export class Game extends Scene {
         this.oneWayPlatforms = [];
 
         // Create a few example one-way platforms
-        const platform1 = new OneWayPlatform(this, 0, 0);
-        platform1.setBlockPosition(3, 2, 0, 50); // Platform at height 3
-        this.oneWayPlatforms.push(platform1);
+        // const platform1 = new OneWayPlatform(this, 0, 0);
+        // platform1.setBlockPosition(3, 2, 0, 50); // Platform at height 3
+        // this.oneWayPlatforms.push(platform1);
 
-        const platform2 = new OneWayPlatform(this, 0, 0);
-        platform2.setBlockPosition(4, 2, 0, 50); // Platform at height 5
-        this.oneWayPlatforms.push(platform2);
+        // const platform2 = new OneWayPlatform(this, 0, 0);
+        // platform2.setBlockPosition(4, 2, 0, 50); // Platform at height 5
+        // this.oneWayPlatforms.push(platform2);
 
-        const platform3 = new OneWayPlatform(this, 0, 0);
-        platform3.setBlockPosition(5, 2, 0, 50); // Platform at height 4
-        this.oneWayPlatforms.push(platform3);
+        // const platform3 = new OneWayPlatform(this, 0, 0);
+        // platform3.setBlockPosition(5, 2, 0, 50); // Platform at height 4
+        // this.oneWayPlatforms.push(platform3);
 
         // Debug tools - all disabled by default but can be toggled with controls
 
@@ -232,7 +232,7 @@ export class Game extends Scene {
 
         // Update player using the Player class
         if (this.player) {
-            this.player.update(this.isSequencerMode);
+            this.player.update();
         }
     }
 
