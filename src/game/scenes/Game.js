@@ -45,6 +45,9 @@ export class Game extends Scene {
         this.player.setBounce(0);
         this.player.setCollideWorldBounds(true);
 
+        this.player.body.setSize(64, 80, true);
+        this.player.body.setOffset(32, 44);
+
         // Make player more responsive with higher gravity and air resistance
         // Adjusted for 64px blocks (doubled from previous 32px blocks)
         this.player.body.setGravityY(1200); // Faster falling (scaled for larger blocks)
