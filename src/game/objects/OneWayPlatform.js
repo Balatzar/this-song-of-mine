@@ -13,17 +13,18 @@ export class OneWayPlatform {
         this.sprite.body.setImmovable(true);
         this.sprite.body.moves = false;
 
-        // Set up one-way collision detection with player
-        this.setupCollisions();
+        // Don't set up collisions in constructor - they'll be set up externally
+        // when the player is fully initialized
     }
 
-    setupCollisions() {
+    setupCollisions(player) {
         // Use collider with custom process callback for one-way logic
         this.scene.physics.add.collider(
-            this.scene.player,
+            player.sprite, // Use the player sprite directly
             this.sprite,
             null, // No collision callback needed
-            (player, platform) => this.shouldCollide(player, platform), // Process callback
+            (playerSprite, platform) =>
+                this.shouldCollide(playerSprite, platform), // Process callback
             this.scene
         );
     }

@@ -24,15 +24,18 @@ export class Game extends Scene {
      * @param {string} texture - The texture key for the block
      * @returns {Phaser.Physics.Arcade.Sprite} The created block sprite
      */
-    createBlockAt(blockX, blockY, texture) {
+    createBlockAt(blockX, blockY, texture, offsetX = 0, offsetY = 0) {
         // Use world height instead of viewport height since we expanded the world
         const worldHeight = this.physics.world.bounds.height;
 
         // Convert block coordinates to pixel coordinates
         // Blocks are positioned by their center
-        const pixelX = blockX * this.blockSize + this.blockSize / 2;
+        const pixelX = blockX * this.blockSize + this.blockSize / 2 + offsetX;
         const pixelY =
-            worldHeight - (blockY + 1) * this.blockSize + this.blockSize / 2;
+            worldHeight -
+            (blockY + 1) * this.blockSize +
+            this.blockSize / 2 +
+            offsetY;
 
         return this.platforms.create(pixelX, pixelY, texture);
     }
@@ -50,13 +53,6 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
-        // this.createBlockAt(6, 1, "dirt_block");
-        // this.createBlockAt(8, 3, "dirt_block");
-
-        // this.createBlockAt(11, 1, "dirt_block");
-        // this.createBlockAt(12, 2, "dirt_block");
-        // this.createBlockAt(13, 3, "dirt_block");
-
         // Create extended floor - cover much more ground for the larger world
         const blocksPerRow = Math.ceil(worldWidth / this.blockSize);
         for (let x = 0; x < blocksPerRow; x++) {
@@ -72,21 +68,15 @@ export class Game extends Scene {
         this.exitSign = new ExitSign(this, 0, 0);
         this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
 
-        // Create one-way platforms for testing
-        this.oneWayPlatforms = [];
+        this.createBlockAt(6, 2, "dirt_block", -20, -20);
 
-        // Create a few example one-way platforms
-        // const platform1 = new OneWayPlatform(this, 0, 0);
-        // platform1.setBlockPosition(3, 2, 0, 50); // Platform at height 3
-        // this.oneWayPlatforms.push(platform1);
+        const platform1 = new OneWayPlatform(this, 0, 0);
+        platform1.setBlockPosition(7, 2, -20, 30); // Platform at height 3
+        platform1.setupCollisions(this.player); // Set up collision with player
 
-        // const platform2 = new OneWayPlatform(this, 0, 0);
-        // platform2.setBlockPosition(4, 2, 0, 50); // Platform at height 5
-        // this.oneWayPlatforms.push(platform2);
-
-        // const platform3 = new OneWayPlatform(this, 0, 0);
-        // platform3.setBlockPosition(5, 2, 0, 50); // Platform at height 4
-        // this.oneWayPlatforms.push(platform3);
+        const platform2 = new OneWayPlatform(this, 0, 0);
+        platform2.setBlockPosition(8, 2, -20, 30); // Platform at height 3
+        platform2.setupCollisions(this.player); // Set up collision with player
 
         // Debug tools - all disabled by default but can be toggled with controls
 
