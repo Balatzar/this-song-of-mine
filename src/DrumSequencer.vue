@@ -158,12 +158,18 @@ const play = () => {
 };
 
 const toggleStep = (trackIndex, stepIndex) => {
+    // Prevent modifications while playing
+    if (isPlaying.value) return;
+
     tracks.value[trackIndex].pattern[stepIndex] =
         !tracks.value[trackIndex].pattern[stepIndex];
 };
 
 // Drawing Functions
 const startDrawing = (trackIndex, stepIndex, event) => {
+    // Prevent modifications while playing
+    if (isPlaying.value) return;
+
     event.preventDefault();
     isDrawing.value = true;
     hasMoved.value = false;
@@ -213,12 +219,18 @@ const applyDrawing = (trackIndex, stepIndex) => {
 };
 
 const clearPattern = () => {
+    // Prevent modifications while playing
+    if (isPlaying.value) return;
+
     tracks.value.forEach((track) => {
         track.pattern.fill(false);
     });
 };
 
 const createDebugPattern = () => {
+    // Prevent modifications while playing
+    if (isPlaying.value) return;
+
     // Create a simple but musically useful drum pattern for testing
     const patterns = {
         Kick: [
@@ -365,10 +377,19 @@ onUnmounted(() => {
                 {{ isPlaying ? "⏸️" : "▶️" }}
             </button>
             <button class="control-btn" @click="stop">⏹️</button>
-            <button class="control-btn" @click="clearPattern">Clear</button>
+            <button
+                class="control-btn"
+                @click="clearPattern"
+                :disabled="isPlaying"
+                :class="{ disabled: isPlaying }"
+            >
+                Clear
+            </button>
             <button
                 class="control-btn debug-btn"
                 @click="createDebugPattern"
+                :disabled="isPlaying"
+                :class="{ disabled: isPlaying }"
                 title="Create debug pattern"
             >
                 🥁
@@ -399,6 +420,7 @@ onUnmounted(() => {
                             active: step,
                             current: currentStep === stepIndex && isPlaying,
                             drawing: isDrawing,
+                            disabled: isPlaying,
                         }"
                         :style="{
                             backgroundColor: step ? track.color : '',
@@ -478,6 +500,18 @@ onUnmounted(() => {
 .control-btn.debug-btn:hover {
     background: #ff6f00;
     transform: translateY(-1px);
+}
+
+.control-btn.disabled {
+    background: #666;
+    color: #999;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.control-btn.disabled:hover {
+    background: #666;
+    transform: none;
 }
 
 .bpm-control {
@@ -570,6 +604,16 @@ onUnmounted(() => {
 .step-btn.drawing:hover {
     border-color: #fff;
     transform: scale(1.1);
+}
+
+.step-btn.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.step-btn.disabled:hover {
+    border-color: #555;
+    transform: none;
 }
 
 @keyframes pulse {
