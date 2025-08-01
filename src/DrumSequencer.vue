@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, onMounted } from "vue";
 import { EventBus } from "./game/EventBus";
 
 // Props
@@ -15,6 +15,12 @@ const isPlaying = ref(false);
 const currentStep = ref(0);
 const bpm = ref(80);
 const steps = 16;
+
+// Drawing State
+const isDrawing = ref(false);
+const hasMoved = ref(false); // Track if mouse moved during draw
+const drawingMode = ref(null); // 'activate' or 'deactivate'
+const initialStep = ref({ trackIndex: null, stepIndex: null }); // Track initial step for single click
 
 // Drum tracks
 const tracks = ref([
@@ -156,6 +162,56 @@ const toggleStep = (trackIndex, stepIndex) => {
         !tracks.value[trackIndex].pattern[stepIndex];
 };
 
+// Drawing Functions
+const startDrawing = (trackIndex, stepIndex, event) => {
+    event.preventDefault();
+    isDrawing.value = true;
+    hasMoved.value = false;
+
+    // Store initial step
+    initialStep.value = { trackIndex, stepIndex };
+
+    // Determine drawing mode based on current step state
+    const currentState = tracks.value[trackIndex].pattern[stepIndex];
+    drawingMode.value = currentState ? "deactivate" : "activate";
+
+    // Don't apply immediately - wait for mouseup or movement
+};
+
+const continueDrawing = (trackIndex, stepIndex) => {
+    if (isDrawing.value) {
+        if (!hasMoved.value) {
+            // First movement - apply to initial step too
+            applyDrawing(
+                initialStep.value.trackIndex,
+                initialStep.value.stepIndex
+            );
+            hasMoved.value = true;
+        }
+        applyDrawing(trackIndex, stepIndex);
+    }
+};
+
+const stopDrawing = (trackIndex, stepIndex) => {
+    if (isDrawing.value && !hasMoved.value) {
+        // This was a single click, not a drag - use normal toggle behavior
+        toggleStep(initialStep.value.trackIndex, initialStep.value.stepIndex);
+    }
+
+    isDrawing.value = false;
+    hasMoved.value = false;
+    drawingMode.value = null;
+    initialStep.value = { trackIndex: null, stepIndex: null };
+};
+
+const applyDrawing = (trackIndex, stepIndex) => {
+    if (drawingMode.value === "activate") {
+        tracks.value[trackIndex].pattern[stepIndex] = true;
+    } else if (drawingMode.value === "deactivate") {
+        tracks.value[trackIndex].pattern[stepIndex] = false;
+    }
+};
+
 const clearPattern = () => {
     tracks.value.forEach((track) => {
         track.pattern.fill(false);
@@ -263,14 +319,35 @@ EventBus.on("sequencer-ready-to-play", () => {
     }
 });
 
+// Global mouse up handler for drawing
+const globalStopDrawing = () => {
+    if (isDrawing.value && !hasMoved.value) {
+        // This was a single click, not a drag - use normal toggle behavior
+        toggleStep(initialStep.value.trackIndex, initialStep.value.stepIndex);
+    }
+
+    isDrawing.value = false;
+    hasMoved.value = false;
+    drawingMode.value = null;
+    initialStep.value = { trackIndex: null, stepIndex: null };
+};
+
+// Setup global mouse events for drawing
+onMounted(() => {
+    document.addEventListener("mouseup", globalStopDrawing);
+    document.addEventListener("mouseleave", globalStopDrawing);
+});
+
 // Cleanup
 onUnmounted(() => {
     if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
     }
-    // Clean up event listener
+    // Clean up event listeners
     EventBus.off("sequencer-ready-to-play");
+    document.removeEventListener("mouseup", globalStopDrawing);
+    document.removeEventListener("mouseleave", globalStopDrawing);
 });
 </script>
 
@@ -321,6 +398,7 @@ onUnmounted(() => {
                         :class="{
                             active: step,
                             current: currentStep === stepIndex && isPlaying,
+                            drawing: isDrawing,
                         }"
                         :style="{
                             backgroundColor: step ? track.color : '',
@@ -329,7 +407,9 @@ onUnmounted(() => {
                                     ? 0.8
                                     : 1,
                         }"
-                        @click="toggleStep(trackIndex, stepIndex)"
+                        @mousedown="startDrawing(trackIndex, stepIndex, $event)"
+                        @mouseenter="continueDrawing(trackIndex, stepIndex)"
+                        @mouseup="stopDrawing(trackIndex, stepIndex)"
                     ></button>
                 </div>
             </div>
@@ -346,6 +426,10 @@ onUnmounted(() => {
     border-radius: 12px;
     padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .sequencer-container h2 {
@@ -476,6 +560,16 @@ onUnmounted(() => {
 .step-btn.current {
     animation: pulse 0.3s ease-in-out;
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+}
+
+.step-btn.drawing {
+    cursor: crosshair;
+    border-color: #aaa;
+}
+
+.step-btn.drawing:hover {
+    border-color: #fff;
+    transform: scale(1.1);
 }
 
 @keyframes pulse {
