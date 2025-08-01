@@ -1,0 +1,47 @@
+---
+globs: src/game/**/*
+description: Game coordinate system and positioning rules
+---
+
+# Game Coordinate System - Bottom-Up Drawing
+
+This game uses a **bottom-up coordinate system** where:
+
+-   **blockY = 0** is the **ground level** (bottom of the world)
+-   **blockY increases upward** (higher values = higher positions)
+-   All positioning must account for the **world height**, not viewport height
+
+## Key Implementation Details
+
+### Block Positioning
+
+The [createBlockAt function](mdc:src/game/scenes/Game.js) correctly converts block coordinates:
+
+```javascript
+// Use world height, not viewport height
+const worldHeight = this.physics.world.bounds.height;
+const pixelY = worldHeight - (blockY + 1) * this.blockSize + this.blockSize / 2;
+```
+
+### Player Positioning
+
+When positioning the player, always calculate from the bottom of the world:
+
+```javascript
+// Position from bottom of world, not top
+this.player = this.physics.add.sprite(
+    x,
+    worldHeight - offsetFromBottom,
+    texture
+);
+```
+
+## Important Reminders
+
+-   ❌ Don't use `gameHeight` (viewport) for world positioning
+-   ✅ Use `worldHeight` or `this.physics.world.bounds.height`
+-   ❌ Don't position from top-down like typical screen coordinates
+-   ✅ Always position from bottom-up (ground level = blockY 0)
+
+When expanding the world size, ensure all positioning functions use the expanded world bounds, not the original viewport dimensions.
+
