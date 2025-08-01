@@ -6,6 +6,7 @@ import characterWalkAUrl from "../../assets/Sprites/Characters/Default/character
 import characterWalkBUrl from "../../assets/Sprites/Characters/Default/character_green_walk_b.png?url";
 import characterJumpUrl from "../../assets/Sprites/Characters/Default/character_green_jump.png?url";
 import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_grass_block_top.png?url";
+import signExitUrl from "../../assets/Sprites/Tiles/Default/sign_exit.png?url";
 
 export class Preloader extends Scene {
     constructor() {
@@ -36,6 +37,7 @@ export class Preloader extends Scene {
 
         // Load terrain sprites
         this.load.image("dirt_block", dirtBlockUrl);
+        this.load.image("sign_exit", signExitUrl);
     }
 
     create() {

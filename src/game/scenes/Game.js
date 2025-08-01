@@ -2,6 +2,7 @@ import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 import { DebugTools } from "../debug";
 import { PlayerConfig } from "../playerConfig";
+import { ExitSign } from "../objects/ExitSign";
 
 export class Game extends Scene {
     constructor() {
@@ -127,6 +128,10 @@ export class Game extends Scene {
 
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys();
+
+        // Create exit sign - place it somewhere in the world
+        this.exitSign = new ExitSign(this, 0, 0);
+        this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
 
         // Debug tools - all disabled by default but can be toggled with controls
 
