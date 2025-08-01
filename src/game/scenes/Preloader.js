@@ -5,7 +5,7 @@ import characterIdleUrl from "../../assets/Sprites/Characters/Default/character_
 import characterWalkAUrl from "../../assets/Sprites/Characters/Default/character_green_walk_a.png?url";
 import characterWalkBUrl from "../../assets/Sprites/Characters/Default/character_green_walk_b.png?url";
 import characterJumpUrl from "../../assets/Sprites/Characters/Default/character_green_jump.png?url";
-import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_dirt_block_center.png?url";
+import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_grass_block_top.png?url";
 
 export class Preloader extends Scene {
     constructor() {
