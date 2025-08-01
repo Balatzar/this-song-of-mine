@@ -69,14 +69,15 @@ export class Game extends Scene {
         this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
 
         this.createBlockAt(6, 2, "dirt_block", -20, -20);
+        this.createBlockAt(11, 1, "dirt_block", -20, -20);
+        this.createBlockAt(11, 2, "dirt_block", -20, -20);
+        this.createBlockAt(12, 2, "dirt_block", -20, -20);
+        this.createBlockAt(12, 3, "dirt_block", -20, -20);
 
-        const platform1 = new OneWayPlatform(this, 0, 0);
-        platform1.setBlockPosition(7, 2, -20, 30); // Platform at height 3
-        platform1.setupCollisions(this.player); // Set up collision with player
-
-        const platform2 = new OneWayPlatform(this, 0, 0);
-        platform2.setBlockPosition(8, 2, -20, 30); // Platform at height 3
-        platform2.setupCollisions(this.player); // Set up collision with player
+        new OneWayPlatform(this, 7, 2, -20, 30, this.player);
+        new OneWayPlatform(this, 8, 2, -20, 30, this.player);
+        new OneWayPlatform(this, 9, 2, -20, 30, this.player);
+        new OneWayPlatform(this, 10, 2, -20, 30, this.player);
 
         // Debug tools - all disabled by default but can be toggled with controls
 

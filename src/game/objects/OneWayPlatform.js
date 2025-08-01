@@ -3,18 +3,39 @@
  * A platform that can be passed through from below but is solid when standing on it
  */
 export class OneWayPlatform {
-    constructor(scene, x, y) {
+    /**
+     * Create a one-way platform
+     * @param {Scene} scene - The Phaser scene
+     * @param {number} blockX - Block X coordinate (0 = leftmost)
+     * @param {number} blockY - Block Y coordinate (0 = bottom row)
+     * @param {number} offsetX - Pixel offset from block position (default: 0)
+     * @param {number} offsetY - Pixel offset from block position (default: 0)
+     * @param {Player} player - Player object for collision setup (optional)
+     */
+    constructor(
+        scene,
+        blockX,
+        blockY,
+        offsetX = 0,
+        offsetY = 0,
+        player = null
+    ) {
         this.scene = scene;
 
-        // Create the platform sprite
-        this.sprite = scene.physics.add.sprite(x, y, "bridge_logs");
+        // Create the platform sprite at origin first
+        this.sprite = scene.physics.add.sprite(0, 0, "bridge_logs");
 
         // Make it static (doesn't fall or move)
         this.sprite.body.setImmovable(true);
         this.sprite.body.moves = false;
 
-        // Don't set up collisions in constructor - they'll be set up externally
-        // when the player is fully initialized
+        // Position the platform using block coordinates
+        this.setBlockPosition(blockX, blockY, offsetX, offsetY);
+
+        // Set up collisions if player is provided
+        if (player) {
+            this.setupCollisions(player);
+        }
     }
 
     setupCollisions(player) {
