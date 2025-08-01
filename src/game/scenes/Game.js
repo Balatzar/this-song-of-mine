@@ -212,7 +212,10 @@ export class Game extends Scene {
         this.isSequencerMode = false;
         this.sequencerData = null;
 
-        console.log("Exited sequencer mode - manual controls active");
+        console.log("Exited sequencer mode - restarting scene for fresh start");
+
+        // Restart the scene for a clean reset, just like when starting
+        this.scene.restart();
     }
 
     onSequencerStep(data) {
