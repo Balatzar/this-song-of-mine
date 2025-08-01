@@ -60,8 +60,12 @@ export class Game extends Scene {
         }
 
         // Reset snail
-        if (this.snail) {
-            this.snail.resetToInitialState();
+        if (this.snail1) {
+            this.snail1.resetToInitialState();
+            console.log("Snail reset to initial position");
+        }
+        if (this.snail2) {
+            this.snail2.resetToInitialState();
             console.log("Snail reset to initial position");
         }
     }
@@ -89,7 +93,8 @@ export class Game extends Scene {
         this.player = new Player(this, this.platforms, 200);
 
         // Create snail enemy
-        this.snail = new Snail(this, 15, 1, 0, 0, this.player, 4 * 64);
+        this.snail1 = new Snail(this, 15, 1, 0, 0, this.player, 4 * 64);
+        this.snail2 = new Snail(this, 25, 1, 0, 0, this.player, 4 * 64);
 
         // Player animations and controls are now handled by the Player class
 
@@ -317,8 +322,11 @@ export class Game extends Scene {
         }
 
         // Update snail enemy
-        if (this.snail) {
-            this.snail.update();
+        if (this.snail1) {
+            this.snail1.update();
+        }
+        if (this.snail2) {
+            this.snail2.update();
         }
     }
 
