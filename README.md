@@ -1,240 +1,193 @@
-# Phaser Vue Template
+# This Song is Mine
 
-This is a Phaser 3 project template that uses the Vue framework and Vite for bundling. It includes a bridge for Vue to Phaser game communication, hot-reloading for quick development workflow and scripts to generate production-ready builds.
-
-**[This Template is also available as a TypeScript version.](https://github.com/phaserjs/template-vue-ts)**
-
-### Versions
-
-This template has been updated for:
-
-- [Phaser 3.90.0](https://github.com/phaserjs/phaser)
-- [Vue 3.5.13](https://github.com/vuejs)
-- [Vite 6.3.1](https://github.com/vitejs/vite)
+A unique puzzle-platformer game where rhythm meets Mario-style gameplay. Control your character through challenging levels by creating drum loops that guide your journey. Every beat matters in this innovative musical platformer adventure.
 
 ![screenshot](screenshot.png)
 
-## Requirements
+## 🎮 Gameplay
 
-[Node.js](https://nodejs.org) is required to install dependencies and run scripts via `npm`.
+**This Song is Mine** combines classic platformer mechanics with rhythm-based puzzle solving:
 
-## Available Commands
+-   **Platformer Action**: Navigate through Mario-style levels with jumping, running, and collision mechanics
+-   **Musical Integration**: Create drum sequences using a built-in drum sequencer
+-   **Puzzle Elements**: Your drum loop affects how you progress through each level
+-   **Responsive Design**: The game adapts to different screen sizes while maintaining gameplay integrity
 
-| Command | Description |
-|---------|-------------|
-| `npm install` | Install project dependencies |
-| `npm run dev` | Launch a development web server |
-| `npm run build` | Create a production build in the `dist` folder |
-| `npm run dev-nolog` | Launch a development web server without sending anonymous data (see "About log.js" below) |
-| `npm run build-nolog` | Create a production build in the `dist` folder without sending anonymous data (see "About log.js" below) |
+## 🛠️ Technical Stack
 
-## Writing Code
+This game is built using modern web technologies:
 
-After cloning the repo, run `npm install` from your project directory. Then, you can start the local development server by running `npm run dev`.
+-   **[Vue.js 3.5.13](https://vuejs.org/)** - Frontend framework for UI components and state management
+-   **[Phaser.js 3.90.0](https://phaser.io/)** - Game engine for 2D graphics, physics, and game mechanics
+-   **[Vite 6.3.1](https://vitejs.dev/)** - Build tool and development server
+-   **Web Audio API** - Real-time audio synthesis for the drum sequencer
 
-The local development server runs on `http://localhost:8080` by default. Please see the Vite documentation if you wish to change this, or add SSL support.
+### Unique Technical Features
 
-Once the server is running you can edit any of the files in the `src` folder. Vite will automatically recompile your code and then reload the browser.
+**Bottom-Left Coordinate System**: Unlike Phaser's default top-left coordinate origin, this game implements a bottom-left coordinate system to ensure responsive gameplay across different screen sizes. This approach allows for:
 
-## Template Project Structure
+-   Consistent ground positioning regardless of screen height
+-   Intuitive level design where platforms are positioned from the bottom up
+-   Better responsive behavior when the game window is resized
 
-We have provided a default project structure to get you started. This is as follows:
-| Path                      | Description                                                                 |
-|---------------------------|-----------------------------------------------------------------------------|
-| `index.html`              | A basic HTML page to contain the game.                                     |
-| `src`                     | Contains the Vue source code.                                              |
-| `src/main.js`             | The main **Vue** entry point. This bootstraps the Vue application.         |
-| `src/App.vue`             | The main Vue component.                                                   |
-| `src/PhaserGame.vue`      | The Vue component that initializes the Phaser Game and serves as a bridge between Vue and Phaser. |
-| `src/game/EventBus.js`    | A simple event bus to communicate between Vue and Phaser.                  |
-| `src/game`                | Contains the game source code.                                             |
-| `src/game/main.js`        | The main **game** entry point. This contains the game configuration and starts the game. |
-| `src/game/scenes/`        | The Phaser Scenes are in this folder.                                      |
-| `public/style.css`        | Some simple CSS rules to help with page layout.                            |
-| `public/assets`           | Contains the static assets used by the game.                               |
+```javascript
+// Example: Positioning floor at bottom of screen
+const floorY = gameHeight - this.blockSize / 2;
 
-## Vue Bridge
+// Example: Platform positioning from bottom-left
+this.platforms.create(
+    this.blockSize * 3 + this.blockOffset,
+    gameHeight - this.blockSize * 3 - this.blockOffset,
+    "dirt_block"
+);
+```
 
-The `PhaserGame.vue` component is the bridge between Vue and Phaser. It initializes the Phaser game and passes events between the two.
+## 🚀 Getting Started
 
-To communicate between Vue and Phaser, you can use the **EventBus.js** file. This is a simple event bus that allows you to emit and listen for events from both Vue and Phaser.
+### Prerequisites
 
-```js
-// In Vue
-import { EventBus } from './EventBus';
+-   [Node.js](https://nodejs.org) (version 16 or higher)
+-   npm (comes with Node.js)
 
-// Emit an event
-EventBus.emit('event-name', data);
+### Installation
 
-// In Phaser
-// Listen for an event
-EventBus.on('event-name', (data) => {
-    // Do something with the data
+1. Clone the repository
+2. Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+3. Start the development server:
+
+    ```bash
+    npm run dev
+    ```
+
+4. Open your browser and navigate to `http://localhost:8080`
+
+### Available Commands
+
+| Command               | Description                                 |
+| --------------------- | ------------------------------------------- |
+| `npm install`         | Install project dependencies                |
+| `npm run dev`         | Launch development server with logging      |
+| `npm run build`       | Create production build                     |
+| `npm run dev-nolog`   | Launch development server without analytics |
+| `npm run build-nolog` | Create production build without analytics   |
+
+## 🏗️ Project Structure
+
+```
+src/
+├── App.vue              # Main Vue application component
+├── main.js              # Vue application entry point
+├── PhaserGame.vue       # Phaser-Vue bridge component
+├── DrumSequencer.vue    # Musical interface component
+└── game/
+    ├── main.js          # Phaser game configuration
+    ├── EventBus.js      # Vue-Phaser communication
+    ├── debug.js         # Development debug tools
+    └── scenes/
+        ├── Game.js      # Main game scene
+        └── Preloader.js # Asset loading scene
+
+public/
+├── assets/
+│   └── Sprites/         # Game sprite assets
+│       ├── Characters/  # Player character sprites
+│       ├── Enemies/     # Enemy sprites
+│       ├── Tiles/       # Level tile sprites
+│       └── Backgrounds/ # Background sprites
+└── style.css           # Global styles
+```
+
+## 🎵 Drum Sequencer Features
+
+The integrated drum sequencer includes:
+
+-   **4 Drum Tracks**: Kick, Snare, Hi-Hat, and Open Hat
+-   **16-Step Sequencer**: Create complex rhythmic patterns
+-   **Real-time Audio**: Web Audio API synthesis for immediate feedback
+-   **Visual Feedback**: Color-coded tracks and step highlighting
+-   **BPM Control**: Adjustable tempo to match your gameplay style
+
+## 🎯 Game Features
+
+### Character System
+
+-   Multiple character sprites with walk, jump, and idle animations
+-   Responsive physics with gravity and collision detection
+-   Smooth movement controls optimized for rhythm-based gameplay
+
+### Level Design
+
+-   Grid-based level construction for precise platforming
+-   Responsive positioning using bottom-left coordinate system
+-   Debug tools for development and level creation
+
+### Physics & Mechanics
+
+-   Arcade physics with customizable gravity and drag
+-   Collision detection between player and platforms
+-   World bounds to keep gameplay contained
+
+## 🔧 Development
+
+### Vue-Phaser Integration
+
+Communication between Vue components and Phaser scenes is handled through an EventBus:
+
+```javascript
+// In Vue components
+import { EventBus } from "./game/EventBus";
+EventBus.emit("event-name", data);
+
+// In Phaser scenes
+EventBus.on("event-name", (data) => {
+    // Handle the event
 });
 ```
 
-In addition to this, the `PhaserGame` component exposes the Phaser game instance along with the most recently active Phaser Scene. You can pick these up from Vue via `(defineExpose({ scene, game }))`.
+### Debug Tools
 
-Once exposed, you can access them like any regular state reference.
+Development includes comprehensive debug utilities:
 
-## Phaser Scene Handling
+-   Grid overlay with coordinate visualization
+-   Collision zone display
+-   Performance monitoring
+-   Responsive dimension testing
 
-In Phaser, the Scene is the lifeblood of your game. It is where you sprites, game logic and all of the Phaser systems live. You can also have multiple scenes running at the same time. This template provides a way to obtain the current active scene from Vue.
+### Asset Management
 
-You can get the current Phaser Scene from the component event `"current-active-scene"`. In order to do this, you need to emit the event `"current-scene-ready"` from the Phaser Scene class. This event should be emitted when the scene is ready to be used. You can see this done in all of the Scenes in our template.
+Game assets are organized by type and include multiple resolution versions:
 
-**Important**: When you add a new Scene to your game, make sure you expose to Vue by emitting the `"current-scene-ready"` event via the `EventBus`, like this:
+-   `Default/` - Standard resolution sprites
+-   `Double/` - High-resolution variants for modern displays
 
+## 📱 Responsive Design
 
-```js
-class MyScene extends Phaser.Scene
-{
-    constructor ()
-    {
-        super('MyScene');
-    }
+The game automatically adapts to different screen sizes:
 
-    create ()
-    {
-        // Your Game Objects and logic here
+-   **Split Layout**: Game takes the top 50% of screen, drum sequencer takes the bottom 50%
+-   **Dynamic Scaling**: Game dimensions adjust to viewport while maintaining aspect ratio
+-   **Minimum Sizes**: Enforced minimum dimensions ensure playability on small screens
+-   **Bottom-Left Origin**: Custom coordinate system ensures consistent ground positioning
 
-        // At the end of create method:
-        EventBus.emit('current-scene-ready', this);
-    }
-}
-```
+## 🚀 Building for Production
 
-You don't have to emit this event if you don't need to access the specific scene from Vue. Also, you don't have to emit it at the end of `create`, you can emit it at any point. For example, should your Scene be waiting for a network request or API call to complete, it could emit the event once that data is ready.
-
-### Vue Component Example
-
-Here's an example of how to access Phaser data for use in a Vue Component:
-
-```js
-// In a parent component
-<script setup>
-import { ref, toRaw } from 'vue';
-
-const phaserRef = ref();
-const game = toRaw(phaserRef.value.game);
-const scene = toRaw(phaserRef.value.scene);
-
-const onCurrentActiveScene = (scene) => {
-    
-    // This is invoked
-
-}
-
-</script>
-<template>
-  <PhaserGame ref="phaserRef" @current-active-scene="onCurrentActiveScene" />
-</template>
-```
-
-In the code above, you can get a reference to the current Phaser Game instance and the current Scene by calling `ref()`.
-
-From this state reference, the game instance is available via `toRaw(phaserRef.value.game)` and the most recently active Scene via `toRaw(phaserRef.value.scene)`
-
-The `onCurrentActiveScene` callback will also be invoked whenever the the Phaser Scene changes, as long as you emit the event via the EventBus, as outlined above.
-
-## Handling Assets
-
-Vite supports loading assets via JavaScript module `import` statements.
-
-This template provides support for both embedding assets and also loading them from a static folder. To embed an asset, you can import it at the top of the JavaScript file you are using it in:
-
-```js
-import logoImg from './assets/logo.png'
-```
-
-To load static files such as audio files, videos, etc place them into the `public/assets` folder. Then you can use this path in the Loader calls within Phaser:
-
-```js
-preload ()
-{
-    //  This is an example of an imported bundled image.
-    //  Remember to import it at the top of this file
-    this.load.image('logo', logoImg);
-
-    //  This is an example of loading a static image
-    //  from the public/assets folder:
-    this.load.image('background', 'assets/bg.png');
-}
-```
-
-When you issue the `npm run build` command, all static assets are automatically copied to the `dist/assets` folder.
-
-## Deploying to Production
-
-After you run the `npm run build` command, your code will be built into a single bundle and saved to the `dist` folder, along with any other assets your project imported, or stored in the public assets folder.
-
-In order to deploy your game, you will need to upload *all* of the contents of the `dist` folder to a public facing web server.
-
-## Customizing the Template
-
-### Vite
-
-If you want to customize your build, such as adding plugin (i.e. for loading CSS or fonts), you can modify the `vite/config.*.mjs` file for cross-project changes, or you can modify and/or create new configuration files and target them in specific npm tasks inside of `package.json`. Please see the [Vite documentation](https://vitejs.dev/) for more information.
-
-## About log.js
-
-If you inspect our node scripts you will see there is a file called `log.js`. This file makes a single silent API call to a domain called `gryzor.co`. This domain is owned by Phaser Studio Inc. The domain name is a homage to one of our favorite retro games.
-
-We send the following 3 pieces of data to this API: The name of the template being used (vue, react, etc). If the build was 'dev' or 'prod' and finally the version of Phaser being used.
-
-At no point is any personal data collected or sent. We don't know about your project files, device, browser or anything else. Feel free to inspect the `log.js` file to confirm this.
-
-Why do we do this? Because being open source means we have no visible metrics about which of our templates are being used. We work hard to maintain a large and diverse set of templates for Phaser developers and this is our small anonymous way to determine if that work is actually paying off, or not. In short, it helps us ensure we're building the tools for you.
-
-However, if you don't want to send any data, you can use these commands instead:
-
-Dev:
+Create a production build:
 
 ```bash
-npm run dev-nolog
+npm run build
 ```
 
-Build:
+The built files will be in the `dist/` folder. Deploy all contents to your web server.
 
-```bash
-npm run build-nolog
-```
+## 📄 License
 
-Or, to disable the log entirely, simply delete the file `log.js` and remove the call to it in the `scripts` section of `package.json`:
+MIT License - See [LICENSE](LICENSE) file for details.
 
-Before:
+---
 
-```json
-"scripts": {
-    "dev": "node log.js dev & dev-template-script",
-    "build": "node log.js build & build-template-script"
-},
-```
-
-After:
-
-```json
-"scripts": {
-    "dev": "dev-template-script",
-    "build": "build-template-script"
-},
-```
-
-Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
-
-## Join the Phaser Community!
-
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
-
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
-
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
-
-The Phaser logo and characters are &copy; 2011 - 2025 Phaser Studio Inc.
-
-All rights reserved.
+_Powered by Vue.js, Phaser.js, and the magic of combining rhythm with platforming gameplay._
