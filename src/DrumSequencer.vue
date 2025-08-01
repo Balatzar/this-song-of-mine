@@ -22,6 +22,22 @@ const hasMoved = ref(false); // Track if mouse moved during draw
 const drawingMode = ref(null); // 'activate' or 'deactivate'
 const initialStep = ref({ trackIndex: null, stepIndex: null }); // Track initial step for single click
 
+// Budget configuration
+const budgetConfig = {
+    Kick: { max: 4, unlimited: false },
+    Snare: { max: 2, unlimited: false },
+    "Hi-Hat": { max: 0, unlimited: true },
+    "Open Hat": { max: 0, unlimited: true },
+};
+
+// Budget tracking
+const budgetUsage = ref({
+    Kick: 0,
+    Snare: 0,
+    "Hi-Hat": 0,
+    "Open Hat": 0,
+});
+
 // Drum tracks
 const tracks = ref([
     { name: "Kick", pattern: new Array(steps).fill(false), color: "#ff4444" },
@@ -89,6 +105,34 @@ const createDrumSound = (type) => {
 
     oscillator.start();
     oscillator.stop(audioContext.currentTime + 0.5);
+};
+
+// Budget Management Functions
+const countBeats = (trackName) => {
+    const track = tracks.value.find((t) => t.name === trackName);
+    return track ? track.pattern.filter((step) => step).length : 0;
+};
+
+const updateBudgetUsage = () => {
+    tracks.value.forEach((track) => {
+        budgetUsage.value[track.name] = countBeats(track.name);
+    });
+};
+
+const canAddBeat = (trackName) => {
+    const config = budgetConfig[trackName];
+    if (config.unlimited) return true;
+
+    const currentUsage = countBeats(trackName);
+    return currentUsage < config.max;
+};
+
+const isBudgetExceeded = (trackName) => {
+    const config = budgetConfig[trackName];
+    if (config.unlimited) return false;
+
+    const currentUsage = countBeats(trackName);
+    return currentUsage >= config.max;
 };
 
 // Sequencer Controls
@@ -161,8 +205,16 @@ const toggleStep = (trackIndex, stepIndex) => {
     // Prevent modifications while playing
     if (isPlaying.value) return;
 
-    tracks.value[trackIndex].pattern[stepIndex] =
-        !tracks.value[trackIndex].pattern[stepIndex];
+    const track = tracks.value[trackIndex];
+    const currentState = track.pattern[stepIndex];
+
+    // If trying to activate a step, check budget
+    if (!currentState && !canAddBeat(track.name)) {
+        return; // Budget exceeded, don't toggle
+    }
+
+    track.pattern[stepIndex] = !currentState;
+    updateBudgetUsage();
 };
 
 // Drawing Functions
@@ -211,10 +263,17 @@ const stopDrawing = (trackIndex, stepIndex) => {
 };
 
 const applyDrawing = (trackIndex, stepIndex) => {
+    const track = tracks.value[trackIndex];
+
     if (drawingMode.value === "activate") {
-        tracks.value[trackIndex].pattern[stepIndex] = true;
+        // Check budget before activating
+        if (canAddBeat(track.name)) {
+            track.pattern[stepIndex] = true;
+            updateBudgetUsage();
+        }
     } else if (drawingMode.value === "deactivate") {
-        tracks.value[trackIndex].pattern[stepIndex] = false;
+        track.pattern[stepIndex] = false;
+        updateBudgetUsage();
     }
 };
 
@@ -225,6 +284,7 @@ const clearPattern = () => {
     tracks.value.forEach((track) => {
         track.pattern.fill(false);
     });
+    updateBudgetUsage();
 };
 
 const createDebugPattern = () => {
@@ -312,6 +372,7 @@ const createDebugPattern = () => {
             track.pattern = [...patterns[track.name]];
         }
     });
+    updateBudgetUsage();
 };
 
 // Listen for game scene ready signal
@@ -348,6 +409,8 @@ const globalStopDrawing = () => {
 onMounted(() => {
     document.addEventListener("mouseup", globalStopDrawing);
     document.addEventListener("mouseleave", globalStopDrawing);
+    // Initialize budget usage
+    updateBudgetUsage();
 });
 
 // Cleanup
@@ -410,6 +473,21 @@ onUnmounted(() => {
             >
                 <div class="track-label" :style="{ borderColor: track.color }">
                     {{ track.name }}
+                    <div
+                        class="budget-indicator"
+                        :class="{
+                            'budget-exceeded': isBudgetExceeded(track.name),
+                        }"
+                    >
+                        <span v-if="budgetConfig[track.name].unlimited">
+                            Unlimited
+                        </span>
+                        <span v-else>
+                            {{ budgetUsage[track.name] }}/{{
+                                budgetConfig[track.name].max
+                            }}
+                        </span>
+                    </div>
                 </div>
                 <div class="track-steps">
                     <button
@@ -556,6 +634,25 @@ onUnmounted(() => {
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.1);
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.budget-indicator {
+    font-size: 10px;
+    font-weight: normal;
+    color: #ccc;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 4px;
+    border-radius: 3px;
+    line-height: 1;
+}
+
+.budget-indicator.budget-exceeded {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.2);
+    font-weight: bold;
 }
 
 .track-steps {
