@@ -3,18 +3,39 @@
  * When the player touches this sign, they win the game
  */
 export class ExitSign {
-    constructor(scene, x, y, player) {
+    /**
+     * Create an exit sign
+     * @param {Scene} scene - The Phaser scene
+     * @param {number} blockX - Block X coordinate (0 = leftmost)
+     * @param {number} blockY - Block Y coordinate (0 = bottom row)
+     * @param {number} offsetX - Pixel offset from block position (default: 0)
+     * @param {number} offsetY - Pixel offset from block position (default: 0)
+     * @param {Player} player - Player object for collision setup (optional)
+     */
+    constructor(
+        scene,
+        blockX,
+        blockY,
+        offsetX = 0,
+        offsetY = 0,
+        player = null
+    ) {
         this.scene = scene;
 
-        // Create the exit sign sprite
-        this.sprite = scene.physics.add.sprite(x, y, "sign_exit");
+        // Create the exit sign sprite at origin first
+        this.sprite = scene.physics.add.sprite(0, 0, "sign_exit");
 
         // Make it static (doesn't fall or move)
         this.sprite.body.setImmovable(true);
         this.sprite.body.moves = false;
 
-        // Set up collision detection with player
-        this.setupCollisions(player);
+        // Position the exit sign using block coordinates
+        this.setBlockPosition(blockX, blockY, offsetX, offsetY);
+
+        // Set up collision detection with player if provided
+        if (player) {
+            this.setupCollisions(player);
+        }
     }
 
     setupCollisions(player) {
@@ -72,14 +93,17 @@ export class ExitSign {
      * Position the exit sign using block coordinates (bottom-up system)
      * @param {number} blockX - Block X coordinate (0 = leftmost)
      * @param {number} blockY - Block Y coordinate (0 = bottom row)
+     * @param {number} offsetX - Pixel offset from block position (default: 0)
+     * @param {number} offsetY - Pixel offset from block position (default: 0)
      */
-    setBlockPosition(blockX, blockY) {
+    setBlockPosition(blockX, blockY, offsetX = 0, offsetY = 0) {
         const blockSize = this.scene.blockSize;
         const worldHeight = this.scene.physics.world.bounds.height;
 
         // Convert block coordinates to pixel coordinates
-        const pixelX = blockX * blockSize + blockSize / 2;
-        const pixelY = worldHeight - (blockY + 1) * blockSize + blockSize / 2;
+        const pixelX = blockX * blockSize + blockSize / 2 + offsetX;
+        const pixelY =
+            worldHeight - (blockY + 1) * blockSize + blockSize / 2 + offsetY;
 
         this.sprite.setPosition(pixelX, pixelY);
     }

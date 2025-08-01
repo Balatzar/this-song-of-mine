@@ -5,6 +5,7 @@ import { PlayerConfig } from "../playerConfig";
 import { ExitSign } from "../objects/ExitSign";
 import { OneWayPlatform } from "../objects/OneWayPlatform";
 import { Player } from "../objects/Player";
+import { Bridge } from "../objects/Bridge";
 
 export class Game extends Scene {
     constructor() {
@@ -64,9 +65,7 @@ export class Game extends Scene {
 
         // Player animations and controls are now handled by the Player class
 
-        // Create exit sign - place it somewhere in the world
-        this.exitSign = new ExitSign(this, 0, 0, this.player);
-        this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
+        new ExitSign(this, 30, 1, 0, 0, this.player);
 
         this.createBlockAt(6, 2, "dirt_block", -20, -20);
         this.createBlockAt(11, 1, "dirt_block", -20, -20);
@@ -74,10 +73,11 @@ export class Game extends Scene {
         this.createBlockAt(12, 2, "dirt_block", -20, -20);
         this.createBlockAt(12, 3, "dirt_block", -20, -20);
 
-        new OneWayPlatform(this, 7, 2, -20, 30, this.player);
-        new OneWayPlatform(this, 8, 2, -20, 30, this.player);
-        new OneWayPlatform(this, 9, 2, -20, 30, this.player);
-        new OneWayPlatform(this, 10, 2, -20, 30, this.player);
+        new OneWayPlatform(this, 7, 2, -20, 10, this.player);
+
+        new Bridge(this, 8, 2, 0, 3, this.player);
+        new Bridge(this, 9, 2, -20, 3, this.player);
+        new Bridge(this, 10, 2, -20, 3, this.player);
 
         // Debug tools - all disabled by default but can be toggled with controls
 

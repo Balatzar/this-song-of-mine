@@ -8,6 +8,7 @@ import characterJumpUrl from "../../assets/Sprites/Characters/Default/character_
 import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_grass_block_top.png?url";
 import signExitUrl from "../../assets/Sprites/Tiles/Default/sign_exit.png?url";
 import bridgeLogsUrl from "../../assets/Sprites/Tiles/Default/bridge_logs.png?url";
+import bridgeUrl from "../../assets/Sprites/Tiles/Default/bridge.png?url";
 
 export class Preloader extends Scene {
     constructor() {
@@ -40,6 +41,7 @@ export class Preloader extends Scene {
         this.load.image("dirt_block", dirtBlockUrl);
         this.load.image("sign_exit", signExitUrl);
         this.load.image("bridge_logs", bridgeLogsUrl);
+        this.load.image("bridge", bridgeUrl);
     }
 
     create() {
