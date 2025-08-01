@@ -343,7 +343,9 @@ export class Game extends Scene {
             // The sequencer step handler will override this when beats are active
             if (
                 !this.player.anims.isPlaying ||
-                this.player.anims.currentAnim.key === "walk"
+                (this.player.anims.currentAnim &&
+                    this.player.anims.currentAnim.key !== "walk" &&
+                    this.player.anims.currentAnim.key !== "jump")
             ) {
                 this.player.anims.play("idle", true);
             }
