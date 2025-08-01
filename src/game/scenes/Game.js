@@ -136,17 +136,20 @@ export class Game extends Scene {
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        // Add grid overlay
-        DebugTools.createGridOverlay(this, this.blockSize);
+        // Debug tools - all disabled by default but can be toggled with controls
 
-        // Add collision zone visualization (you can toggle this on/off)
-        this.showCollisions = true; // Set to false to disable
+        // Grid overlay - not created by default, but can be toggled with 'G' key
+        // (Grid will be created when first toggled)
 
-        // Add debug info for player body
-        DebugTools.createBodyDebugInfo(this, this.player.body, "Player");
+        // Player debug info - not created by default, but can be toggled with 'P' key
+        // (Debug info will be created when first toggled)
+
+        // Collision zone visualization - disabled by default
+        this.showCollisions = false;
 
         // Add keyboard controls for toggling debug features
-        this.debugKeys = this.input.keyboard.addKeys("C,G");
+        // C = Toggle collision zones, G = Toggle grid overlay, P = Toggle player debug info
+        this.debugKeys = this.input.keyboard.addKeys("C,G,P");
 
         // Listen for sequencer events (for future use)
         EventBus.on("sequencer-started", this.onSequencerStarted, this);
@@ -257,6 +260,10 @@ export class Game extends Scene {
 
     // Debug toggle event handlers
     onToggleGrid(visible) {
+        // Create grid overlay if it doesn't exist yet
+        if (!this.gridGraphics) {
+            DebugTools.createGridOverlay(this, this.blockSize);
+        }
         DebugTools.setGridVisible(this, visible);
     }
 
@@ -268,6 +275,27 @@ export class Game extends Scene {
         // Debug controls
         if (Phaser.Input.Keyboard.JustDown(this.debugKeys.C)) {
             DebugTools.toggleCollisionZones(this);
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.G)) {
+            // Create grid overlay if it doesn't exist yet
+            if (!this.gridGraphics) {
+                DebugTools.createGridOverlay(this, this.blockSize);
+            }
+            DebugTools.toggleGrid(this);
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.P)) {
+            // Toggle player debug info
+            if (!this.playerDebugText) {
+                this.playerDebugText = DebugTools.createBodyDebugInfo(
+                    this,
+                    this.player.body,
+                    "Player"
+                );
+            } else {
+                this.playerDebugText.visible = !this.playerDebugText.visible;
+            }
         }
 
         // Update collision visualization if enabled

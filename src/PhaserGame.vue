@@ -7,9 +7,9 @@ import StartGame from "./game/main";
 const scene = ref();
 const game = ref();
 
-// Debug toggle states
-const showGrid = ref(true);
-const showCollisions = ref(true);
+// Debug toggle states - disabled by default
+const showGrid = ref(false);
+const showCollisions = ref(false);
 
 const emit = defineEmits(["current-active-scene"]);
 
