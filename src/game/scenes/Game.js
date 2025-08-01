@@ -1,10 +1,12 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
+import { DebugTools } from "../debug";
 
 export class Game extends Scene {
     constructor() {
         super("Game");
-        this.blockSize = 64; // Store as class property for reuse
+        this.blockSize = 64;
+        this.blockOffset = 32;
     }
 
     create() {
@@ -17,6 +19,14 @@ export class Game extends Scene {
 
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
+
+        this.platforms.create();
+
+        this.platforms.create(
+            this.blockSize * 3 + this.blockOffset,
+            gameHeight - this.blockSize * 3,
+            "dirt_block"
+        );
 
         // Create floor - a complete solid ground
         // Position floor so bottom edge touches game bottom (account for center positioning)
@@ -68,10 +78,38 @@ export class Game extends Scene {
         // Controls
         this.cursors = this.input.keyboard.createCursorKeys();
 
+        // Add grid overlay
+        DebugTools.createGridOverlay(this, this.blockSize);
+
+        // Add collision zone visualization (you can toggle this on/off)
+        this.showCollisions = true; // Set to false to disable
+
+        // Add debug info for player body
+        DebugTools.createBodyDebugInfo(this, this.player.body, "Player");
+
+        // Add keyboard controls for toggling debug features
+        this.debugKeys = this.input.keyboard.addKeys("C,G");
+
         EventBus.emit("current-scene-ready", this);
     }
 
     update() {
+        // Debug controls
+        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.C)) {
+            DebugTools.toggleCollisionZones(this);
+        }
+
+        // Update collision visualization if enabled
+        if (this.showCollisions) {
+            DebugTools.showCollisionZones(this, {
+                lineColor: 0xff0000, // Red outline
+                fillColor: 0xff0000, // Red fill
+                fillAlpha: 0.2, // Semi-transparent
+                lineAlpha: 0.8, // More opaque outline
+                lineWidth: 2,
+            });
+        }
+
         // Player movement - adjusted for 64px blocks
         if (this.cursors.left.isDown) {
             this.player.setVelocityX(-320); // Scaled up for larger blocks
