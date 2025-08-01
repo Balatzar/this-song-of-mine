@@ -4,6 +4,7 @@ import { Scene } from "phaser";
 export class Game extends Scene {
     constructor() {
         super("Game");
+        this.blockSize = 64; // Store as class property for reuse
     }
 
     create() {
@@ -18,10 +19,10 @@ export class Game extends Scene {
         this.platforms = this.physics.add.staticGroup();
 
         // Create floor - a complete solid ground
-        const blockSize = 32;
-        const floorY = gameHeight - 32;
-        for (let x = 0; x < gameWidth; x += blockSize) {
-            this.platforms.create(x + blockSize / 2, floorY, "dirt_block");
+        // Position floor so bottom edge touches game bottom (account for center positioning)
+        const floorY = gameHeight - this.blockSize / 2;
+        for (let x = 0; x < gameWidth; x += this.blockSize) {
+            this.platforms.create(x + this.blockSize / 2, floorY, "dirt_block");
         }
 
         // Create player (relative to game size)
@@ -35,8 +36,9 @@ export class Game extends Scene {
         this.player.setCollideWorldBounds(true);
 
         // Make player more responsive with higher gravity and air resistance
-        this.player.body.setGravityY(800); // Faster falling
-        this.player.setDragX(1000); // Quick stopping when not moving
+        // Adjusted for 64px blocks (doubled from previous 32px blocks)
+        this.player.body.setGravityY(1200); // Faster falling (scaled for larger blocks)
+        this.player.setDragX(1500); // Quick stopping when not moving
 
         // Player physics
         this.physics.add.collider(this.player, this.platforms);
@@ -70,13 +72,13 @@ export class Game extends Scene {
     }
 
     update() {
-        // Player movement - increased speed for snappier movement
+        // Player movement - adjusted for 64px blocks
         if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-240);
+            this.player.setVelocityX(-320); // Scaled up for larger blocks
             this.player.anims.play("walk", true);
             this.player.setFlipX(true);
         } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(240);
+            this.player.setVelocityX(320); // Scaled up for larger blocks
             this.player.anims.play("walk", true);
             this.player.setFlipX(false);
         } else {
@@ -84,9 +86,9 @@ export class Game extends Scene {
             this.player.anims.play("idle", true);
         }
 
-        // Jumping - reduced jump height for quicker, snappier jumps
+        // Jumping - adjusted for 64px blocks
         if (this.cursors.up.isDown && this.player.body.touching.down) {
-            this.player.setVelocityY(-450);
+            this.player.setVelocityY(-600); // Scaled up for larger blocks
             this.player.anims.play("jump", true);
         }
     }
