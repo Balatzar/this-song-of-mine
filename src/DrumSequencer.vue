@@ -13,7 +13,7 @@ const props = defineProps({
 // Drum Sequencer State
 const isPlaying = ref(false);
 const currentStep = ref(0);
-const bpm = ref(120);
+const bpm = ref(100);
 const steps = 16;
 
 // Drum tracks
@@ -159,6 +159,90 @@ const clearPattern = () => {
     });
 };
 
+const createDebugPattern = () => {
+    // Create a simple but musically useful drum pattern for testing
+    const patterns = {
+        Kick: [
+            true,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+            true,
+            false,
+            false,
+            false,
+        ],
+        Snare: [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ],
+        "Hi-Hat": [
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+            true,
+        ],
+        "Open Hat": [
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+        ],
+    };
+
+    tracks.value.forEach((track) => {
+        if (patterns[track.name]) {
+            track.pattern = [...patterns[track.name]];
+        }
+    });
+};
+
 // Cleanup
 onUnmounted(() => {
     if (intervalId) {
@@ -182,11 +266,17 @@ onUnmounted(() => {
             </button>
             <button class="control-btn" @click="stop">⏹️</button>
             <button class="control-btn" @click="clearPattern">Clear</button>
+            <button
+                class="control-btn debug-btn"
+                @click="createDebugPattern"
+                title="Create debug pattern"
+            >
+                🥁
+            </button>
 
             <div class="bpm-control">
                 <label>BPM:</label>
-                <input type="range" v-model="bpm" min="60" max="180" step="1" />
-                <span>{{ bpm }}</span>
+                <span class="bpm-display">{{ bpm }}</span>
             </div>
         </div>
 
@@ -273,6 +363,16 @@ onUnmounted(() => {
     box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
 }
 
+.control-btn.debug-btn {
+    background: #ff9800;
+    color: white;
+}
+
+.control-btn.debug-btn:hover {
+    background: #ff6f00;
+    transform: translateY(-1px);
+}
+
 .bpm-control {
     display: flex;
     align-items: center;
@@ -282,13 +382,14 @@ onUnmounted(() => {
     border-radius: 6px;
 }
 
-.bpm-control input[type="range"] {
-    width: 100px;
-}
-
-.bpm-control span {
-    min-width: 30px;
+.bpm-control .bpm-display {
+    min-width: 40px;
     font-weight: bold;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
 }
 
 .drum-grid {
