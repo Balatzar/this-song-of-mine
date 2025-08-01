@@ -184,10 +184,6 @@ npm run build
 
 The built files will be in the `dist/` folder. Deploy all contents to your web server.
 
-## 📄 License
+## 📄 Credits
 
-MIT License - See [LICENSE](LICENSE) file for details.
-
----
-
-_Powered by Vue.js, Phaser.js, and the magic of combining rhythm with platforming gameplay._
+Drum icons by Freepik
