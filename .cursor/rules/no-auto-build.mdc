@@ -1,0 +1,27 @@
+---
+alwaysApply: true
+description: AI build command restrictions
+---
+
+# Build Command Restrictions
+
+## Never Auto-Build
+
+-   **NEVER** run `npm run build`, `npm run build-nolog`, or any build commands automatically
+-   **NEVER** run `npm run dev`, `npm start`, or development servers automatically
+-   **NEVER** test functionality by building or starting servers on your own
+
+## When Testing is Needed
+
+-   Inform the user that testing is recommended
+-   Let the user decide when and how to run builds/servers
+-   Only run build/dev commands if explicitly requested by the user
+
+## Allowed Actions
+
+-   Code compilation checks via linting tools are OK
+-   Reading package.json scripts is OK for understanding
+-   Checking if servers are already running (curl checks) is OK if explicitly needed
+
+The user manages their own build/development process.
+

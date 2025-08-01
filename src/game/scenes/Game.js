@@ -4,6 +4,7 @@ import { DebugTools } from "../debug";
 import { PlayerConfig } from "../playerConfig";
 import { ExitSign } from "../objects/ExitSign";
 import { OneWayPlatform } from "../objects/OneWayPlatform";
+import { Player } from "../objects/Player";
 
 export class Game extends Scene {
     constructor() {
@@ -62,73 +63,10 @@ export class Game extends Scene {
             this.createBlockAt(x, 0, "dirt_block");
         }
 
-        // Create player - position within the larger world, from the bottom
-        const playerY = worldHeight - 120; // Position from the bottom of the larger world
+        // Create player using the Player class
+        this.player = new Player(this, this.platforms, 200); // Start at x=200
 
-        this.player = this.physics.add.sprite(
-            200, // Start a bit into the world horizontally
-            playerY,
-            "character_idle"
-        );
-        // Remove bounce for snappier movement
-        this.player.setBounce(0);
-        this.player.setCollideWorldBounds(true);
-
-        // Set up camera to follow the player
-        this.cameras.main.startFollow(this.player);
-        this.cameras.main.setLerp(0.05, 0.05); // Smooth camera following
-        this.cameras.main.setZoom(1); // Adjust zoom if needed
-        this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
-
-        this.player.body.setSize(
-            PlayerConfig.bodyWidth,
-            PlayerConfig.bodyHeight,
-            true
-        );
-        this.player.body.setOffset(
-            PlayerConfig.bodyOffsetX,
-            PlayerConfig.bodyOffsetY
-        );
-
-        // Make player more responsive with higher gravity and air resistance
-        // Adjusted for 64px blocks (doubled from previous 32px blocks)
-        this.player.body.setGravityY(PlayerConfig.gravity); // Faster falling (scaled for larger blocks)
-        this.player.setDragX(PlayerConfig.dragX); // Quick stopping when not moving
-
-        // Player physics
-        this.physics.add.collider(this.player, this.platforms);
-
-        // Create animations only if they don't already exist
-        if (!this.anims.exists("walk")) {
-            this.anims.create({
-                key: "walk",
-                frames: [
-                    { key: "character_walk_a" },
-                    { key: "character_walk_b" },
-                ],
-                frameRate: PlayerConfig.walkFrameRate,
-                repeat: -1,
-            });
-        }
-
-        if (!this.anims.exists("jump")) {
-            this.anims.create({
-                key: "jump",
-                frames: [{ key: "character_jump" }],
-                frameRate: PlayerConfig.jumpFrameRate,
-            });
-        }
-
-        if (!this.anims.exists("idle")) {
-            this.anims.create({
-                key: "idle",
-                frames: [{ key: "character_idle" }],
-                frameRate: PlayerConfig.idleFrameRate,
-            });
-        }
-
-        // Controls
-        this.cursors = this.input.keyboard.createCursorKeys();
+        // Player animations and controls are now handled by the Player class
 
         // Create exit sign - place it somewhere in the world
         this.exitSign = new ExitSign(this, 0, 0);
@@ -237,42 +175,8 @@ export class Game extends Scene {
 
         const { activeBeats } = data;
 
-        // Process each drum track action
-        // Track indices: [Kick, Snare, Hi-Hat, Open Hat]
-
-        // Kick (index 0) = Jump
-        if (activeBeats[0] && this.player.body.touching.down) {
-            this.player.setVelocityY(PlayerConfig.jumpVelocity); // Same jump strength as manual controls
-            this.player.anims.play("jump", true);
-            console.log("Beat action: JUMP");
-        }
-
-        // Snare (index 1) = Nothing for now
-        if (activeBeats[1]) {
-            console.log("Beat action: SNARE (no action)");
-        }
-
-        // Hi-Hat (index 2) = Go Right
-        if (activeBeats[2]) {
-            this.player.setVelocityX(PlayerConfig.horizontalSpeed); // Same speed as manual controls
-            this.player.anims.play("walk", true);
-            this.player.setFlipX(false); // Face right
-            console.log("Beat action: RIGHT");
-        }
-
-        // Open Hat (index 3) = Go Left
-        if (activeBeats[3]) {
-            this.player.setVelocityX(-PlayerConfig.horizontalSpeed); // Same speed as manual controls
-            this.player.anims.play("walk", true);
-            this.player.setFlipX(true); // Face left
-            console.log("Beat action: LEFT");
-        }
-
-        // If no horizontal movement beats are active, let drag handle stopping
-        if (!activeBeats[2] && !activeBeats[3]) {
-            // Don't explicitly set velocity to 0, let the drag system handle it naturally
-            // This allows for more natural movement between beats
-        }
+        // Use the player's sequencer movement handler
+        this.player.handleSequencerMovement(activeBeats);
     }
 
     // Debug toggle event handlers
@@ -307,7 +211,7 @@ export class Game extends Scene {
             if (!this.playerDebugText) {
                 this.playerDebugText = DebugTools.createBodyDebugInfo(
                     this,
-                    this.player.body,
+                    this.player.getBody(),
                     "Player"
                 );
             } else {
@@ -326,38 +230,9 @@ export class Game extends Scene {
             });
         }
 
-        // Only allow manual controls when NOT in sequencer mode
-        if (!this.isSequencerMode) {
-            // Player movement - adjusted for 64px blocks
-            if (this.cursors.left.isDown) {
-                this.player.setVelocityX(-PlayerConfig.horizontalSpeed);
-                this.player.anims.play("walk", true);
-                this.player.setFlipX(true);
-            } else if (this.cursors.right.isDown) {
-                this.player.setVelocityX(PlayerConfig.horizontalSpeed);
-                this.player.anims.play("walk", true);
-                this.player.setFlipX(false);
-            } else {
-                // Let drag handle stopping for more responsive feel
-                this.player.anims.play("idle", true);
-            }
-
-            // Jumping - adjusted for 64px blocks
-            if (this.cursors.up.isDown && this.player.body.touching.down) {
-                this.player.setVelocityY(PlayerConfig.jumpVelocity);
-                this.player.anims.play("jump", true);
-            }
-        } else {
-            // In sequencer mode, show idle animation when no beats are playing
-            // The sequencer step handler will override this when beats are active
-            if (
-                !this.player.anims.isPlaying ||
-                (this.player.anims.currentAnim &&
-                    this.player.anims.currentAnim.key !== "walk" &&
-                    this.player.anims.currentAnim.key !== "jump")
-            ) {
-                this.player.anims.play("idle", true);
-            }
+        // Update player using the Player class
+        if (this.player) {
+            this.player.update(this.isSequencerMode);
         }
     }
 
