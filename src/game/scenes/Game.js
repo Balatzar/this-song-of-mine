@@ -3,6 +3,7 @@ import { Scene } from "phaser";
 import { DebugTools } from "../debug";
 import { PlayerConfig } from "../playerConfig";
 import { ExitSign } from "../objects/ExitSign";
+import { OneWayPlatform } from "../objects/OneWayPlatform";
 
 export class Game extends Scene {
     constructor() {
@@ -132,6 +133,22 @@ export class Game extends Scene {
         // Create exit sign - place it somewhere in the world
         this.exitSign = new ExitSign(this, 0, 0);
         this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
+
+        // Create one-way platforms for testing
+        this.oneWayPlatforms = [];
+
+        // Create a few example one-way platforms
+        const platform1 = new OneWayPlatform(this, 0, 0);
+        platform1.setBlockPosition(3, 2, 0, 50); // Platform at height 3
+        this.oneWayPlatforms.push(platform1);
+
+        const platform2 = new OneWayPlatform(this, 0, 0);
+        platform2.setBlockPosition(4, 2, 0, 50); // Platform at height 5
+        this.oneWayPlatforms.push(platform2);
+
+        const platform3 = new OneWayPlatform(this, 0, 0);
+        platform3.setBlockPosition(5, 2, 0, 50); // Platform at height 4
+        this.oneWayPlatforms.push(platform3);
 
         // Debug tools - all disabled by default but can be toggled with controls
 
