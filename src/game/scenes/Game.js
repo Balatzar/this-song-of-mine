@@ -1,6 +1,7 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 import { DebugTools } from "../debug";
+import { PlayerConfig } from "../playerConfig";
 
 export class Game extends Scene {
     constructor() {
@@ -93,13 +94,20 @@ export class Game extends Scene {
         this.cameras.main.setZoom(1); // Adjust zoom if needed
         this.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
 
-        this.player.body.setSize(64, 80, true);
-        this.player.body.setOffset(32, 44);
+        this.player.body.setSize(
+            PlayerConfig.bodyWidth,
+            PlayerConfig.bodyHeight,
+            true
+        );
+        this.player.body.setOffset(
+            PlayerConfig.bodyOffsetX,
+            PlayerConfig.bodyOffsetY
+        );
 
         // Make player more responsive with higher gravity and air resistance
         // Adjusted for 64px blocks (doubled from previous 32px blocks)
-        this.player.body.setGravityY(2500); // Faster falling (scaled for larger blocks)
-        this.player.setDragX(1500); // Quick stopping when not moving
+        this.player.body.setGravityY(PlayerConfig.gravity); // Faster falling (scaled for larger blocks)
+        this.player.setDragX(PlayerConfig.dragX); // Quick stopping when not moving
 
         // Player physics
         this.physics.add.collider(this.player, this.platforms);
@@ -112,7 +120,7 @@ export class Game extends Scene {
                     { key: "character_walk_a" },
                     { key: "character_walk_b" },
                 ],
-                frameRate: 10,
+                frameRate: PlayerConfig.walkFrameRate,
                 repeat: -1,
             });
         }
@@ -121,7 +129,7 @@ export class Game extends Scene {
             this.anims.create({
                 key: "jump",
                 frames: [{ key: "character_jump" }],
-                frameRate: 20,
+                frameRate: PlayerConfig.jumpFrameRate,
             });
         }
 
@@ -129,7 +137,7 @@ export class Game extends Scene {
             this.anims.create({
                 key: "idle",
                 frames: [{ key: "character_idle" }],
-                frameRate: 20,
+                frameRate: PlayerConfig.idleFrameRate,
             });
         }
 
@@ -225,7 +233,7 @@ export class Game extends Scene {
 
         // Kick (index 0) = Jump
         if (activeBeats[0] && this.player.body.touching.down) {
-            this.player.setVelocityY(-700); // Same jump strength as manual controls
+            this.player.setVelocityY(PlayerConfig.jumpVelocity); // Same jump strength as manual controls
             this.player.anims.play("jump", true);
             console.log("Beat action: JUMP");
         }
@@ -237,7 +245,7 @@ export class Game extends Scene {
 
         // Hi-Hat (index 2) = Go Right
         if (activeBeats[2]) {
-            this.player.setVelocityX(320); // Same speed as manual controls
+            this.player.setVelocityX(PlayerConfig.horizontalSpeed); // Same speed as manual controls
             this.player.anims.play("walk", true);
             this.player.setFlipX(false); // Face right
             console.log("Beat action: RIGHT");
@@ -245,7 +253,7 @@ export class Game extends Scene {
 
         // Open Hat (index 3) = Go Left
         if (activeBeats[3]) {
-            this.player.setVelocityX(-320); // Same speed as manual controls
+            this.player.setVelocityX(-PlayerConfig.horizontalSpeed); // Same speed as manual controls
             this.player.anims.play("walk", true);
             this.player.setFlipX(true); // Face left
             console.log("Beat action: LEFT");
@@ -313,11 +321,11 @@ export class Game extends Scene {
         if (!this.isSequencerMode) {
             // Player movement - adjusted for 64px blocks
             if (this.cursors.left.isDown) {
-                this.player.setVelocityX(-320);
+                this.player.setVelocityX(-PlayerConfig.horizontalSpeed);
                 this.player.anims.play("walk", true);
                 this.player.setFlipX(true);
             } else if (this.cursors.right.isDown) {
-                this.player.setVelocityX(320);
+                this.player.setVelocityX(PlayerConfig.horizontalSpeed);
                 this.player.anims.play("walk", true);
                 this.player.setFlipX(false);
             } else {
@@ -327,7 +335,7 @@ export class Game extends Scene {
 
             // Jumping - adjusted for 64px blocks
             if (this.cursors.up.isDown && this.player.body.touching.down) {
-                this.player.setVelocityY(-600);
+                this.player.setVelocityY(PlayerConfig.jumpVelocity);
                 this.player.anims.play("jump", true);
             }
         } else {

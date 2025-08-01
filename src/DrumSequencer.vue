@@ -13,7 +13,7 @@ const props = defineProps({
 // Drum Sequencer State
 const isPlaying = ref(false);
 const currentStep = ref(0);
-const bpm = ref(100);
+const bpm = ref(80);
 const steps = 16;
 
 // Drum tracks
