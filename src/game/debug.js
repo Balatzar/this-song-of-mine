@@ -9,34 +9,35 @@ export class DebugTools {
      * @param {number} gridSize - The size of each grid cell (default: 64px)
      */
     static createGridOverlay(scene, gridSize = 64) {
-        const gameWidth = scene.sys.game.config.width;
-        const gameHeight = scene.sys.game.config.height;
+        // Use world bounds instead of viewport bounds for expanded worlds
+        const worldWidth = scene.physics.world.bounds.width;
+        const worldHeight = scene.physics.world.bounds.height;
 
         // Create graphics object for drawing grid lines
         const graphics = scene.add.graphics();
         graphics.lineStyle(1, 0x00ff00, 0.5); // Green lines with 50% opacity
 
-        // Draw vertical lines
-        for (let x = 0; x <= gameWidth; x += gridSize) {
+        // Draw vertical lines across the entire world
+        for (let x = 0; x <= worldWidth; x += gridSize) {
             graphics.moveTo(x, 0);
-            graphics.lineTo(x, gameHeight);
+            graphics.lineTo(x, worldHeight);
         }
 
-        // Draw horizontal lines
-        for (let y = gameHeight; y >= 0; y -= gridSize) {
+        // Draw horizontal lines across the entire world
+        for (let y = worldHeight; y >= 0; y -= gridSize) {
             graphics.moveTo(0, y);
-            graphics.lineTo(gameWidth, y);
+            graphics.lineTo(worldWidth, y);
         }
 
         graphics.strokePath();
 
-        // Add block coordinate labels at intersections
-        for (let x = 0; x <= gameWidth; x += gridSize) {
-            for (let y = 0; y <= gameHeight; y += gridSize) {
+        // Add block coordinate labels at every grid intersection
+        for (let x = 0; x <= worldWidth; x += gridSize) {
+            for (let y = 0; y <= worldHeight; y += gridSize) {
                 // Calculate block coordinates (in block units, not pixels)
                 // Note: Game is drawn from bottom, so Y coordinates are inverted
                 const blockX = Math.floor(x / gridSize);
-                const totalRows = Math.floor(gameHeight / gridSize);
+                const totalRows = Math.floor(worldHeight / gridSize);
                 const blockY = totalRows - Math.floor(y / gridSize);
 
                 // Create text showing block coordinates
