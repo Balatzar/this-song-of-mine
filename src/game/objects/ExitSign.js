@@ -3,7 +3,7 @@
  * When the player touches this sign, they win the game
  */
 export class ExitSign {
-    constructor(scene, x, y) {
+    constructor(scene, x, y, player) {
         this.scene = scene;
 
         // Create the exit sign sprite
@@ -14,13 +14,13 @@ export class ExitSign {
         this.sprite.body.moves = false;
 
         // Set up collision detection with player
-        this.setupCollisions();
+        this.setupCollisions(player);
     }
 
-    setupCollisions() {
+    setupCollisions(player) {
         // Add overlap detection with player
         this.scene.physics.add.overlap(
-            this.scene.player,
+            player.sprite,
             this.sprite,
             () => this.onPlayerTouch(),
             null,

@@ -65,7 +65,7 @@ export class Game extends Scene {
         // Player animations and controls are now handled by the Player class
 
         // Create exit sign - place it somewhere in the world
-        this.exitSign = new ExitSign(this, 0, 0);
+        this.exitSign = new ExitSign(this, 0, 0, this.player);
         this.exitSign.setBlockPosition(20, 1); // Place it at block position 20, 1 (right side of initial area)
 
         this.createBlockAt(6, 2, "dirt_block", -20, -20);
