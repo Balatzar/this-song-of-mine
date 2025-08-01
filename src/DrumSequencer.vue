@@ -100,23 +100,26 @@ const togglePlay = async () => {
 
     if (isPlaying.value) {
         clearInterval(intervalId);
+        intervalId = null; // Reset intervalId to null
         isPlaying.value = false;
         // Stop the sequence in the game
         EventBus.emit("sequencer-stopped");
     } else {
         isPlaying.value = true;
-        // Send sequence data to the game
+        // Send sequence data to the game (this will trigger scene restart)
         EventBus.emit("sequencer-started", {
             tracks: tracks.value,
             bpm: bpm.value,
             steps: steps,
         });
-        play();
+        // Don't call play() immediately - wait for scene to be ready
+        // The game scene will emit "sequencer-ready-to-play" when ready
     }
 };
 
 const stop = () => {
     clearInterval(intervalId);
+    intervalId = null; // Reset intervalId to null
     isPlaying.value = false;
     currentStep.value = 0;
     // Stop the sequence in the game
@@ -163,7 +166,7 @@ const createDebugPattern = () => {
     // Create a simple but musically useful drum pattern for testing
     const patterns = {
         Kick: [
-            true,
+            false,
             false,
             false,
             false,
@@ -243,11 +246,31 @@ const createDebugPattern = () => {
     });
 };
 
+// Listen for game scene ready signal
+EventBus.on("sequencer-ready-to-play", () => {
+    console.log("Received sequencer-ready-to-play signal", {
+        isPlaying: isPlaying.value,
+        intervalId: intervalId,
+        shouldStart: isPlaying.value && !intervalId,
+    });
+
+    // Only start playing if we're in the "waiting to play" state
+    if (isPlaying.value && !intervalId) {
+        console.log("Scene ready - starting sequencer playback");
+        play();
+    } else {
+        console.log("Not starting playback - conditions not met");
+    }
+});
+
 // Cleanup
 onUnmounted(() => {
     if (intervalId) {
         clearInterval(intervalId);
+        intervalId = null;
     }
+    // Clean up event listener
+    EventBus.off("sequencer-ready-to-play");
 });
 </script>
 
