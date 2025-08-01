@@ -31,6 +31,15 @@ export class DebugTools {
 
         graphics.strokePath();
 
+        // Set grid depth to be above game elements but below UI
+        graphics.setDepth(999);
+
+        // Store reference to grid graphics in scene
+        scene.gridGraphics = graphics;
+
+        // Initialize grid labels array
+        scene.gridLabels = [];
+
         // Add block coordinate labels at every grid intersection
         for (let x = 0; x <= worldWidth; x += gridSize) {
             for (let y = 0; y <= worldHeight; y += gridSize) {
@@ -53,11 +62,11 @@ export class DebugTools {
                     }
                 );
                 coordinateText.setDepth(1000); // Make sure coordinates appear above everything
+
+                // Store reference to this label
+                scene.gridLabels.push(coordinateText);
             }
         }
-
-        // Set grid depth to be above game elements but below UI
-        graphics.setDepth(999);
 
         return graphics;
     }
@@ -132,6 +141,45 @@ export class DebugTools {
         if (scene.collisionDebugGraphics) {
             scene.collisionDebugGraphics.visible =
                 !scene.collisionDebugGraphics.visible;
+        }
+    }
+
+    /**
+     * Sets collision zone visibility
+     * @param {Phaser.Scene} scene - The Phaser scene
+     * @param {boolean} visible - Whether collision zones should be visible
+     */
+    static setCollisionZonesVisible(scene, visible) {
+        scene.showCollisions = visible;
+        if (scene.collisionDebugGraphics) {
+            scene.collisionDebugGraphics.visible = visible;
+        }
+    }
+
+    /**
+     * Sets grid overlay visibility
+     * @param {Phaser.Scene} scene - The Phaser scene
+     * @param {boolean} visible - Whether grid should be visible
+     */
+    static setGridVisible(scene, visible) {
+        if (scene.gridGraphics) {
+            scene.gridGraphics.visible = visible;
+        }
+        if (scene.gridLabels) {
+            scene.gridLabels.forEach((label) => {
+                label.visible = visible;
+            });
+        }
+    }
+
+    /**
+     * Toggles grid overlay visibility
+     * @param {Phaser.Scene} scene - The Phaser scene
+     */
+    static toggleGrid(scene) {
+        if (scene.gridGraphics) {
+            const newVisible = !scene.gridGraphics.visible;
+            DebugTools.setGridVisible(scene, newVisible);
         }
     }
 

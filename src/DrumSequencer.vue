@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onUnmounted } from "vue";
+import { EventBus } from "./game/EventBus";
 
 // Props
 const props = defineProps({
@@ -100,8 +101,16 @@ const togglePlay = async () => {
     if (isPlaying.value) {
         clearInterval(intervalId);
         isPlaying.value = false;
+        // Stop the sequence in the game
+        EventBus.emit("sequencer-stopped");
     } else {
         isPlaying.value = true;
+        // Send sequence data to the game
+        EventBus.emit("sequencer-started", {
+            tracks: tracks.value,
+            bpm: bpm.value,
+            steps: steps,
+        });
         play();
     }
 };
@@ -110,6 +119,8 @@ const stop = () => {
     clearInterval(intervalId);
     isPlaying.value = false;
     currentStep.value = 0;
+    // Stop the sequence in the game
+    EventBus.emit("sequencer-stopped");
 };
 
 const play = () => {
@@ -122,6 +133,14 @@ const play = () => {
             if (track.pattern[currentStep.value]) {
                 createDrumSound(track.name);
             }
+        });
+
+        // Send current step to game
+        EventBus.emit("sequencer-step", {
+            currentStep: currentStep.value,
+            activeBeats: tracks.value.map(
+                (track) => track.pattern[currentStep.value]
+            ),
         });
 
         // Move to next step

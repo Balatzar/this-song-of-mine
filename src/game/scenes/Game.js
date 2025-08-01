@@ -135,7 +135,40 @@ export class Game extends Scene {
         // Add keyboard controls for toggling debug features
         this.debugKeys = this.input.keyboard.addKeys("C,G");
 
+        // Listen for sequencer events (for future use)
+        EventBus.on("sequencer-started", this.onSequencerStarted, this);
+        EventBus.on("sequencer-stopped", this.onSequencerStopped, this);
+        EventBus.on("sequencer-step", this.onSequencerStep, this);
+
+        // Listen for debug toggle events
+        EventBus.on("toggle-grid", this.onToggleGrid, this);
+        EventBus.on("toggle-collisions", this.onToggleCollisions, this);
+
         EventBus.emit("current-scene-ready", this);
+    }
+
+    onSequencerStarted(data) {
+        console.log("Sequencer started with data:", data);
+        // Event kept for future game logic integration
+    }
+
+    onSequencerStopped() {
+        console.log("Sequencer stopped");
+        // Event kept for future game logic integration
+    }
+
+    onSequencerStep(data) {
+        console.log("Sequencer step:", data.currentStep);
+        // Event kept for future game logic integration
+    }
+
+    // Debug toggle event handlers
+    onToggleGrid(visible) {
+        DebugTools.setGridVisible(this, visible);
+    }
+
+    onToggleCollisions(visible) {
+        DebugTools.setCollisionZonesVisible(this, visible);
     }
 
     update() {
@@ -174,6 +207,16 @@ export class Game extends Scene {
             this.player.setVelocityY(-700);
             this.player.anims.play("jump", true);
         }
+    }
+
+    // Clean up event listeners when scene is destroyed
+    destroy() {
+        EventBus.off("sequencer-started", this.onSequencerStarted, this);
+        EventBus.off("sequencer-stopped", this.onSequencerStopped, this);
+        EventBus.off("sequencer-step", this.onSequencerStep, this);
+        EventBus.off("toggle-grid", this.onToggleGrid, this);
+        EventBus.off("toggle-collisions", this.onToggleCollisions, this);
+        super.destroy();
     }
 }
 
