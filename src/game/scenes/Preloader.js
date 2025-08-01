@@ -1,14 +1,18 @@
 import { Scene } from "phaser";
 
+// Import asset URLs
+import characterIdleUrl from "../../assets/Sprites/Characters/Default/character_green_idle.png?url";
+import characterWalkAUrl from "../../assets/Sprites/Characters/Default/character_green_walk_a.png?url";
+import characterWalkBUrl from "../../assets/Sprites/Characters/Default/character_green_walk_b.png?url";
+import characterJumpUrl from "../../assets/Sprites/Characters/Default/character_green_jump.png?url";
+import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_dirt_block_center.png?url";
+
 export class Preloader extends Scene {
     constructor() {
         super("Preloader");
     }
 
     init() {
-        //  We loaded this image in our Boot Scene, so we can display it here
-        this.add.image(512, 384, "background");
-
         //  A simple progress bar. This is the outline of the bar.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
 
@@ -23,32 +27,15 @@ export class Preloader extends Scene {
     }
 
     preload() {
-        //  Load the assets for the game
-        this.load.setPath("assets/Sprites");
-
+        //  Load the assets for the game using imported URLs
         // Load character sprites
-        this.load.image(
-            "character_idle",
-            "Characters/Default/character_green_idle.png"
-        );
-        this.load.image(
-            "character_walk_a",
-            "Characters/Default/character_green_walk_a.png"
-        );
-        this.load.image(
-            "character_walk_b",
-            "Characters/Default/character_green_walk_b.png"
-        );
-        this.load.image(
-            "character_jump",
-            "Characters/Default/character_green_jump.png"
-        );
+        this.load.image("character_idle", characterIdleUrl);
+        this.load.image("character_walk_a", characterWalkAUrl);
+        this.load.image("character_walk_b", characterWalkBUrl);
+        this.load.image("character_jump", characterJumpUrl);
 
         // Load terrain sprites
-        this.load.image(
-            "dirt_block",
-            "Tiles/Default/terrain_dirt_block_center.png"
-        );
+        this.load.image("dirt_block", dirtBlockUrl);
     }
 
     create() {
