@@ -44,6 +44,13 @@ export class Player {
             jump: false,
             dash: false,
         };
+
+        // Store initial position and state for reset functionality
+        this.initialPosition = {
+            x: this.sprite.x,
+            y: this.sprite.y,
+            flipX: this.sprite.flipX || false,
+        };
     }
 
     setupPhysics() {
@@ -330,6 +337,35 @@ export class Player {
      */
     getBody() {
         return this.sprite.body;
+    }
+
+    /**
+     * Reset player to initial position and state
+     */
+    resetToInitialState() {
+        if (!this.sprite || !this.initialPosition) return;
+
+        // Reset position using stored initial values
+        this.sprite.setPosition(this.initialPosition.x, this.initialPosition.y);
+        this.sprite.setVelocity(0, 0);
+        this.sprite.setFlipX(this.initialPosition.flipX);
+
+        // Reset player state
+        if (this.isDashing) {
+            this.endDash();
+        }
+        this.hasJumped = false;
+
+        // Clear simulated keys
+        this.simulatedKeys = {
+            left: false,
+            right: false,
+            jump: false,
+            dash: false,
+        };
+
+        // Play idle animation
+        this.sprite.anims.play("idle", true);
     }
 
     /**

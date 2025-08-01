@@ -262,7 +262,7 @@ const createDebugPattern = () => {
             true,
             true,
             true,
-            true,
+            false,
             true,
             true,
             true,

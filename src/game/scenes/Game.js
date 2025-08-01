@@ -1,11 +1,11 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 import { DebugTools } from "../debug";
-import { PlayerConfig } from "../playerConfig";
 import { ExitSign } from "../objects/ExitSign";
 import { OneWayPlatform } from "../objects/OneWayPlatform";
 import { Player } from "../objects/Player";
 import { Bridge } from "../objects/Bridge";
+import { Snail } from "../objects/Snail";
 
 export class Game extends Scene {
     constructor() {
@@ -41,6 +41,26 @@ export class Game extends Scene {
         return this.platforms.create(pixelX, pixelY, texture);
     }
 
+    /**
+     * Reset all moving objects to their initial positions
+     * This is used for start/stop but not pause functionality
+     */
+    resetMovingObjectsToInitialPositions() {
+        console.log("Resetting moving objects to initial positions...");
+
+        // Reset player
+        if (this.player) {
+            this.player.resetToInitialState();
+            console.log("Player reset to initial position");
+        }
+
+        // Reset snail
+        if (this.snail) {
+            this.snail.resetToInitialState();
+            console.log("Snail reset to initial position");
+        }
+    }
+
     create() {
         // Get dynamic game dimensions
         const gameWidth = this.sys.game.config.width;
@@ -61,7 +81,10 @@ export class Game extends Scene {
         }
 
         // Create player using the Player class
-        this.player = new Player(this, this.platforms, 200); // Start at x=200
+        this.player = new Player(this, this.platforms, 200);
+
+        // Create snail enemy
+        this.snail = new Snail(this, 15, 1, 0, 0, this.player, 4 * 64);
 
         // Player animations and controls are now handled by the Player class
 
@@ -75,7 +98,7 @@ export class Game extends Scene {
 
         new OneWayPlatform(this, 7, 2, -20, 10, this.player);
 
-        new Bridge(this, 8, 2, -10, 3, this.player);
+        new Bridge(this, 8, 2, -0, 3, this.player);
         new Bridge(this, 9, 2, -20, 3, this.player);
         new Bridge(this, 10, 2, -20, 3, this.player);
 
@@ -104,53 +127,35 @@ export class Game extends Scene {
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
 
         EventBus.emit("current-scene-ready", this);
-
-        // Check if we should enter sequencer mode after scene restart
-        const shouldEnterSequencerMode =
-            this.registry.get("enterSequencerMode");
-        const storedSequencerData = this.registry.get("sequencerData");
-
-        if (shouldEnterSequencerMode && storedSequencerData) {
-            // Clean up the registry flags
-            this.registry.remove("enterSequencerMode");
-            this.registry.remove("sequencerData");
-
-            // Enter sequencer mode
-            this.isSequencerMode = true;
-            this.sequencerData = storedSequencerData;
-
-            console.log("Entered sequencer mode after scene restart");
-
-            // Notify sequencer that scene is ready to start playback
-            EventBus.emit("sequencer-ready-to-play");
-        }
     }
 
     onSequencerStarted(data) {
         console.log("Sequencer started with data:", data);
 
-        // Store sequencer data for use after scene restart
-        this.registry.set("sequencerData", data);
-        this.registry.set("enterSequencerMode", true);
+        // Reset moving objects to initial positions
+        this.resetMovingObjectsToInitialPositions();
 
-        // Temporarily exit sequencer mode to prevent step events during restart
-        this.isSequencerMode = false;
+        // Enter sequencer mode
+        this.isSequencerMode = true;
+        this.sequencerData = data;
 
-        // Restart the entire scene for a clean reset
-        this.scene.restart();
+        console.log("Entered sequencer mode with clean reset");
+
+        // Notify sequencer that scene is ready to start playback
+        EventBus.emit("sequencer-ready-to-play");
     }
 
     onSequencerStopped() {
         console.log("Sequencer stopped");
 
+        // Reset moving objects to initial positions
+        this.resetMovingObjectsToInitialPositions();
+
         // Exit sequencer mode - return to manual controls
         this.isSequencerMode = false;
         this.sequencerData = null;
 
-        console.log("Exited sequencer mode - restarting scene for fresh start");
-
-        // Restart the scene for a clean reset, just like when starting
-        this.scene.restart();
+        console.log("Exited sequencer mode with clean reset");
     }
 
     onSequencerStep(data) {
@@ -224,6 +229,11 @@ export class Game extends Scene {
         // Update player using the Player class
         if (this.player) {
             this.player.update();
+        }
+
+        // Update snail enemy
+        if (this.snail) {
+            this.snail.update();
         }
     }
 
