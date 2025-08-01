@@ -3,12 +3,12 @@
 
 export const PlayerConfig = {
     // Physics properties
-    gravity: 2500, // Downward acceleration (higher = falls faster)
-    dragX: 1500, // Air resistance (higher = stops faster)
+    gravity: 3200, // Downward acceleration (higher = falls faster) - increased for faster jump timing
+    dragX: 1800, // Air resistance (higher = stops faster) - increased for more responsive controls
 
     // Movement speeds
-    horizontalSpeed: 320, // Left/right movement speed
-    jumpVelocity: -700, // Jump strength (negative = upward)
+    horizontalSpeed: 380, // Left/right movement speed - increased for faster movement
+    jumpVelocity: -850, // Jump strength (negative = upward) - balanced for good height with fast timing
 
     // Collision box settings
     bodyWidth: 64, // Player collision width
