@@ -1,3 +1,5 @@
+import { EventBus } from "../EventBus";
+
 /**
  * Exit Sign game object
  * When the player touches this sign, they win the game
@@ -50,11 +52,22 @@ export class ExitSign {
     }
 
     onPlayerTouch() {
+        // Check if game is over (time limit reached)
+        if (this.scene.isGameOver) {
+            console.log(
+                "Player touched exit but game is over - no win allowed"
+            );
+            return;
+        }
+
         // Trigger win condition
         this.showWinMessage();
     }
 
     showWinMessage() {
+        // Emit player won event to stop the sequencer
+        EventBus.emit("player-won");
+
         // Create win text
         const winText = this.scene.add.text(
             this.scene.cameras.main.centerX,

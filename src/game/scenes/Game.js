@@ -16,6 +16,11 @@ export class Game extends Scene {
         // Sequencer state management
         this.isSequencerMode = false;
         this.sequencerData = null;
+
+        // Loop limit system
+        this.maxLoops = 2;
+        this.currentLoop = 0;
+        this.isGameOver = false;
     }
 
     /**
@@ -121,6 +126,8 @@ export class Game extends Scene {
         EventBus.on("sequencer-started", this.onSequencerStarted, this);
         EventBus.on("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.on("sequencer-step", this.onSequencerStep, this);
+        EventBus.on("game-time-up", this.onGameTimeUp, this);
+        EventBus.on("game-reset", this.onGameReset, this);
 
         // Listen for debug toggle events
         EventBus.on("toggle-grid", this.onToggleGrid, this);
@@ -135,9 +142,12 @@ export class Game extends Scene {
         // Reset moving objects to initial positions
         this.resetMovingObjectsToInitialPositions();
 
-        // Enter sequencer mode
+        // Enter sequencer mode and reset game state
         this.isSequencerMode = true;
         this.sequencerData = data;
+        this.currentLoop = 0;
+        this.isGameOver = false;
+        this.maxLoops = data.maxLoops || 2;
 
         console.log("Entered sequencer mode with clean reset");
 
@@ -163,16 +173,91 @@ export class Game extends Scene {
             "Sequencer step:",
             data.currentStep,
             "Active beats:",
-            data.activeBeats
+            data.activeBeats,
+            "Loop:",
+            data.currentLoop
         );
 
         // Only process if we're in sequencer mode and player exists
         if (!this.isSequencerMode || !this.player) return;
 
+        // Update current loop state
+        this.currentLoop = data.currentLoop || 0;
+        this.isGameOver = data.isGameOver || false;
+
+        // Don't process movement if game is over
+        if (this.isGameOver) return;
+
         const { activeBeats } = data;
 
         // Use the player's sequencer movement handler
         this.player.handleSequencerMovement(activeBeats);
+    }
+
+    onGameTimeUp() {
+        console.log("Game time is up! Player failed to win in time.");
+        this.isGameOver = true;
+
+        // Show game over message
+        this.showGameOverMessage();
+    }
+
+    onGameReset() {
+        console.log("Game reset requested");
+
+        // Reset moving objects to initial positions
+        this.resetMovingObjectsToInitialPositions();
+
+        // Clear any game over messages
+        if (this.gameOverText) {
+            this.gameOverText.destroy();
+            this.gameOverText = null;
+        }
+
+        // Reset game state
+        this.currentLoop = 0;
+        this.isGameOver = false;
+        this.isSequencerMode = false;
+        this.sequencerData = null;
+    }
+
+    showGameOverMessage() {
+        // Create game over text
+        const gameOverText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY - 50,
+            "TIME'S UP!\nGame will restart...",
+            {
+                fontSize: "48px",
+                fontFamily: "Arial",
+                color: "#ff4444",
+                stroke: "#000000",
+                strokeThickness: 4,
+                align: "center",
+            }
+        );
+
+        // Center the text
+        gameOverText.setOrigin(0.5);
+
+        // Make sure it's always visible (fixed to camera)
+        gameOverText.setScrollFactor(0);
+
+        // Store reference for cleanup
+        this.gameOverText = gameOverText;
+
+        // Add pulsing effect
+        this.tweens.add({
+            targets: gameOverText,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: 500,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+        });
+
+        console.log("Game over message displayed");
     }
 
     // Debug toggle event handlers
@@ -242,6 +327,8 @@ export class Game extends Scene {
         EventBus.off("sequencer-started", this.onSequencerStarted, this);
         EventBus.off("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.off("sequencer-step", this.onSequencerStep, this);
+        EventBus.off("game-time-up", this.onGameTimeUp, this);
+        EventBus.off("game-reset", this.onGameReset, this);
         EventBus.off("toggle-grid", this.onToggleGrid, this);
         EventBus.off("toggle-collisions", this.onToggleCollisions, this);
         super.destroy();

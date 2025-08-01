@@ -16,6 +16,11 @@ const currentStep = ref(0);
 const bpm = ref(80);
 const steps = 16;
 
+// Loop limit system
+const maxLoops = 2;
+const currentLoop = ref(0);
+const isGameOver = ref(false);
+
 // Drawing State
 const isDrawing = ref(false);
 const hasMoved = ref(false); // Track if mouse moved during draw
@@ -175,12 +180,17 @@ const togglePlay = async () => {
         // Stop the sequence in the game
         EventBus.emit("sequencer-stopped");
     } else {
+        // Reset loop tracking for new game
+        currentLoop.value = 0;
+        isGameOver.value = false;
+
         isPlaying.value = true;
         // Send sequence data to the game (this will trigger scene restart)
         EventBus.emit("sequencer-started", {
             tracks: tracks.value,
             bpm: bpm.value,
             steps: steps,
+            maxLoops: maxLoops,
         });
         // Don't call play() immediately - wait for scene to be ready
         // The game scene will emit "sequencer-ready-to-play" when ready
@@ -196,11 +206,23 @@ const stop = () => {
     EventBus.emit("sequencer-stopped");
 };
 
+const resetGame = () => {
+    stop();
+    currentLoop.value = 0;
+    isGameOver.value = false;
+    EventBus.emit("game-reset");
+};
+
 const play = () => {
     const stepTime = 60000 / (bpm.value * 4); // 16th notes
     console.log(tracks.value);
 
     intervalId = setInterval(() => {
+        // Skip processing if game is over
+        if (isGameOver.value) {
+            return;
+        }
+
         // Play sounds for current step
         tracks.value.forEach((track) => {
             if (track.pattern[currentStep.value]) {
@@ -214,10 +236,36 @@ const play = () => {
             activeBeats: tracks.value.map(
                 (track) => track.pattern[currentStep.value]
             ),
+            currentLoop: currentLoop.value,
+            maxLoops: maxLoops,
+            isGameOver: isGameOver.value,
         });
 
         // Move to next step
-        currentStep.value = (currentStep.value + 1) % steps;
+        const nextStep = (currentStep.value + 1) % steps;
+
+        // Check if we completed a loop (going from step 15 back to 0)
+        if (currentStep.value === steps - 1 && nextStep === 0) {
+            currentLoop.value++;
+            console.log(`Completed loop ${currentLoop.value}/${maxLoops}`);
+
+            // Check if we've reached the limit
+            if (currentLoop.value >= maxLoops) {
+                isGameOver.value = true;
+                console.log("Time's up! Game over - resetting...");
+
+                // Reset the game after a short delay to show the final state
+                setTimeout(() => {
+                    resetGame();
+                }, 1000);
+
+                // Emit game over event
+                EventBus.emit("game-time-up");
+                return;
+            }
+        }
+
+        currentStep.value = nextStep;
     }, stepTime);
 };
 
@@ -408,8 +456,14 @@ EventBus.on("sequencer-ready-to-play", () => {
         console.log("Scene ready - starting sequencer playback");
         play();
     } else {
-        console.log("Not starting playback - conditions not met");
+        console.log("Not starting playbook - conditions not met");
     }
+});
+
+// Listen for game win to stop the sequencer
+EventBus.on("player-won", () => {
+    console.log("Player won! Stopping sequencer");
+    stop();
 });
 
 // Global mouse up handler for drawing
@@ -441,6 +495,7 @@ onUnmounted(() => {
     }
     // Clean up event listeners
     EventBus.off("sequencer-ready-to-play");
+    EventBus.off("player-won");
     document.removeEventListener("mouseup", globalStopDrawing);
     document.removeEventListener("mouseleave", globalStopDrawing);
 });
@@ -481,6 +536,21 @@ onUnmounted(() => {
             <div class="bpm-control">
                 <label>BPM:</label>
                 <span class="bpm-display">{{ bpm }}</span>
+            </div>
+
+            <div
+                class="loop-counter"
+                :class="{
+                    danger: currentLoop >= maxLoops - 1,
+                    'game-over': isGameOver,
+                }"
+            >
+                <label>Loops remaining:</label>
+                <span class="loop-display"
+                    >{{ Math.max(0, maxLoops - currentLoop) }}/{{
+                        maxLoops
+                    }}</span
+                >
             </div>
         </div>
 
@@ -634,6 +704,81 @@ onUnmounted(() => {
     padding: 4px 8px;
     border-radius: 4px;
     text-align: center;
+}
+
+.loop-counter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 15px;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.loop-counter label {
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.loop-counter .loop-display {
+    min-width: 50px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(76, 175, 80, 0.3);
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    border: 1px solid #4caf50;
+    transition: all 0.3s ease;
+}
+
+.loop-counter.danger {
+    background: rgba(255, 152, 0, 0.2);
+    border-color: #ff9800;
+    animation: pulse-warning 1s ease-in-out infinite;
+}
+
+.loop-counter.danger .loop-display {
+    background: rgba(255, 152, 0, 0.3);
+    border-color: #ff9800;
+    color: #ff9800;
+}
+
+.loop-counter.game-over {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: #f44336;
+    animation: pulse-danger 0.5s ease-in-out infinite;
+}
+
+.loop-counter.game-over .loop-display {
+    background: rgba(244, 67, 54, 0.3);
+    border-color: #f44336;
+    color: #f44336;
+}
+
+@keyframes pulse-warning {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+@keyframes pulse-danger {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
 }
 
 .drum-grid {
