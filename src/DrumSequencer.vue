@@ -40,11 +40,31 @@ const budgetUsage = ref({
 
 // Drum tracks
 const tracks = ref([
-    { name: "Kick", pattern: new Array(steps).fill(false), color: "#ff4444" },
-    { name: "Snare", pattern: new Array(steps).fill(false), color: "#44ff44" },
-    { name: "Hi-Hat", pattern: new Array(steps).fill(false), color: "#4444ff" },
+    {
+        name: "Kick",
+        ability: "Jump",
+        icon: "src/assets/Icons/kick.png",
+        pattern: new Array(steps).fill(false),
+        color: "#ff4444",
+    },
+    {
+        name: "Snare",
+        ability: "Dash after jump",
+        icon: "src/assets/Icons/snare.png",
+        pattern: new Array(steps).fill(false),
+        color: "#44ff44",
+    },
+    {
+        name: "Hi-Hat",
+        ability: "Go Right",
+        icon: "src/assets/Icons/hi-hat.png",
+        pattern: new Array(steps).fill(false),
+        color: "#4444ff",
+    },
     {
         name: "Open Hat",
+        ability: "Go Left",
+        icon: "src/assets/Icons/hi-hat-open.png",
         pattern: new Array(steps).fill(false),
         color: "#ffff44",
     },
@@ -472,7 +492,12 @@ onUnmounted(() => {
                 class="track-row"
             >
                 <div class="track-label" :style="{ borderColor: track.color }">
-                    {{ track.name }}
+                    <div class="ability-info">
+                        <div class="instrument-symbol">
+                            <img :src="track.icon" :alt="track.name" />
+                        </div>
+                        <span class="ability-name">{{ track.ability }}</span>
+                    </div>
                     <div
                         class="budget-indicator"
                         :class="{
@@ -625,25 +650,52 @@ onUnmounted(() => {
 }
 
 .track-label {
-    width: 70px;
+    width: 80px;
     padding: 8px;
     text-align: center;
     font-weight: bold;
     font-size: 12px;
     border: 2px solid;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.9);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
 
+.ability-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.instrument-symbol {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+}
+
+.instrument-symbol img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.ability-name {
+    font-size: 10px;
+    font-weight: bold;
+    color: #333;
+    line-height: 1;
+}
+
 .budget-indicator {
     font-size: 10px;
     font-weight: normal;
-    color: #ccc;
-    background: rgba(0, 0, 0, 0.3);
+    color: #666;
+    background: rgba(0, 0, 0, 0.1);
     padding: 2px 4px;
     border-radius: 3px;
     line-height: 1;
