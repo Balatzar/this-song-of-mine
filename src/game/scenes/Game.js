@@ -9,6 +9,25 @@ export class Game extends Scene {
         this.blockOffset = 32;
     }
 
+    /**
+     * Helper function to create a block at block coordinates
+     * @param {number} blockX - Block X coordinate (0 = leftmost)
+     * @param {number} blockY - Block Y coordinate (0 = bottom row)
+     * @param {string} texture - The texture key for the block
+     * @returns {Phaser.Physics.Arcade.Sprite} The created block sprite
+     */
+    createBlockAt(blockX, blockY, texture) {
+        const gameHeight = this.sys.game.config.height;
+
+        // Convert block coordinates to pixel coordinates
+        // Blocks are positioned by their center
+        const pixelX = blockX * this.blockSize + this.blockSize / 2;
+        const pixelY =
+            gameHeight - (blockY + 1) * this.blockSize + this.blockSize / 2;
+
+        return this.platforms.create(pixelX, pixelY, texture);
+    }
+
     create() {
         // Get dynamic game dimensions
         const gameWidth = this.sys.game.config.width;
@@ -20,19 +39,14 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
-        this.platforms.create();
-
-        this.platforms.create(
-            this.blockSize * 3 + this.blockOffset,
-            gameHeight - this.blockSize * 3 - this.blockOffset,
-            "dirt_block"
-        );
+        this.createBlockAt(3, 3, "dirt_block");
+        this.createBlockAt(6, 1, "dirt_block");
+        this.createBlockAt(8, 3, "dirt_block");
 
         // Create floor - a complete solid ground
-        // Position floor so bottom edge touches game bottom (account for center positioning)
-        const floorY = gameHeight - this.blockSize / 2;
-        for (let x = 0; x < gameWidth; x += this.blockSize) {
-            this.platforms.create(x + this.blockSize / 2, floorY, "dirt_block");
+        const blocksPerRow = 50;
+        for (let x = 0; x < blocksPerRow; x++) {
+            this.createBlockAt(x, 0, "dirt_block");
         }
 
         // Create player (relative to game size)
@@ -82,7 +96,7 @@ export class Game extends Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Add grid overlay
-        DebugTools.createGridOverlay(this, this.blockSize, this.blockOffset);
+        DebugTools.createGridOverlay(this, this.blockSize);
 
         // Add collision zone visualization (you can toggle this on/off)
         this.showCollisions = true; // Set to false to disable
@@ -115,11 +129,11 @@ export class Game extends Scene {
 
         // Player movement - adjusted for 64px blocks
         if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-320); // Scaled up for larger blocks
+            this.player.setVelocityX(-320);
             this.player.anims.play("walk", true);
             this.player.setFlipX(true);
         } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(320); // Scaled up for larger blocks
+            this.player.setVelocityX(320);
             this.player.anims.play("walk", true);
             this.player.setFlipX(false);
         } else {
@@ -129,7 +143,7 @@ export class Game extends Scene {
 
         // Jumping - adjusted for 64px blocks
         if (this.cursors.up.isDown && this.player.body.touching.down) {
-            this.player.setVelocityY(-600); // Scaled up for larger blocks
+            this.player.setVelocityY(-700);
             this.player.anims.play("jump", true);
         }
     }
