@@ -30,8 +30,13 @@ export class Game extends Scene {
             gameHeight * 0.7,
             "character_idle"
         );
-        this.player.setBounce(0.2);
+        // Remove bounce for snappier movement
+        this.player.setBounce(0);
         this.player.setCollideWorldBounds(true);
+
+        // Make player more responsive with higher gravity and air resistance
+        this.player.body.setGravityY(800); // Faster falling
+        this.player.setDragX(1000); // Quick stopping when not moving
 
         // Player physics
         this.physics.add.collider(this.player, this.platforms);
@@ -65,23 +70,23 @@ export class Game extends Scene {
     }
 
     update() {
-        // Player movement
+        // Player movement - increased speed for snappier movement
         if (this.cursors.left.isDown) {
-            this.player.setVelocityX(-160);
+            this.player.setVelocityX(-240);
             this.player.anims.play("walk", true);
             this.player.setFlipX(true);
         } else if (this.cursors.right.isDown) {
-            this.player.setVelocityX(160);
+            this.player.setVelocityX(240);
             this.player.anims.play("walk", true);
             this.player.setFlipX(false);
         } else {
-            this.player.setVelocityX(0);
+            // Let drag handle stopping for more responsive feel
             this.player.anims.play("idle", true);
         }
 
-        // Jumping
+        // Jumping - reduced jump height for quicker, snappier jumps
         if (this.cursors.up.isDown && this.player.body.touching.down) {
-            this.player.setVelocityY(-330);
+            this.player.setVelocityY(-450);
             this.player.anims.play("jump", true);
         }
     }
