@@ -7,8 +7,9 @@ export class DebugTools {
      * Creates a grid overlay with coordinate labels for easier block placement
      * @param {Phaser.Scene} scene - The Phaser scene to add the grid to
      * @param {number} gridSize - The size of each grid cell (default: 64px)
+     * @param {number} blockOffset - The offset of the block from the grid (default: 32px)
      */
-    static createGridOverlay(scene, gridSize = 64) {
+    static createGridOverlay(scene, gridSize = 64, blockOffset = 32) {
         const gameWidth = scene.sys.game.config.width;
         const gameHeight = scene.sys.game.config.height;
 
@@ -23,7 +24,7 @@ export class DebugTools {
         }
 
         // Draw horizontal lines
-        for (let y = 0; y <= gameHeight; y += gridSize) {
+        for (let y = gameHeight; y >= 0; y -= gridSize) {
             graphics.moveTo(0, y);
             graphics.lineTo(gameWidth, y);
         }
@@ -32,19 +33,14 @@ export class DebugTools {
 
         // Add coordinate labels at intersections
         for (let x = 0; x <= gameWidth; x += gridSize) {
-            for (let y = 0; y <= gameHeight; y += gridSize) {
+            for (let y = gameHeight; y >= 0; y -= gridSize) {
                 // Create text showing grid coordinates
-                const coordinateText = scene.add.text(
-                    x + 2,
-                    y + 2,
-                    `${x},${y}`,
-                    {
-                        fontSize: "10px",
-                        fill: "#00ff00",
-                        backgroundColor: "#000000",
-                        alpha: 0.7,
-                    }
-                );
+                const coordinateText = scene.add.text(x, y, `${x},${y}`, {
+                    fontSize: "10px",
+                    fill: "#00ff00",
+                    backgroundColor: "#000000",
+                    alpha: 0.7,
+                });
                 coordinateText.setDepth(1000); // Make sure coordinates appear above everything
             }
         }

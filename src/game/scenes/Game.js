@@ -24,7 +24,7 @@ export class Game extends Scene {
 
         this.platforms.create(
             this.blockSize * 3 + this.blockOffset,
-            gameHeight - this.blockSize * 3,
+            gameHeight - this.blockSize * 3 - this.blockOffset,
             "dirt_block"
         );
 
@@ -82,7 +82,7 @@ export class Game extends Scene {
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Add grid overlay
-        DebugTools.createGridOverlay(this, this.blockSize);
+        DebugTools.createGridOverlay(this, this.blockSize, this.blockOffset);
 
         // Add collision zone visualization (you can toggle this on/off)
         this.showCollisions = true; // Set to false to disable
