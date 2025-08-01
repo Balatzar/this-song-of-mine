@@ -47,28 +47,12 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
-        // Create platforms and terrain across the larger world
-        this.createBlockAt(3, 3, "dirt_block");
         this.createBlockAt(6, 1, "dirt_block");
         this.createBlockAt(8, 3, "dirt_block");
 
-        // Add more platforms across the expanded world
-        this.createBlockAt(15, 5, "dirt_block");
-        this.createBlockAt(16, 5, "dirt_block");
-        this.createBlockAt(17, 5, "dirt_block");
-
-        this.createBlockAt(25, 3, "dirt_block");
-        this.createBlockAt(26, 3, "dirt_block");
-
-        this.createBlockAt(35, 7, "dirt_block");
-        this.createBlockAt(36, 7, "dirt_block");
-        this.createBlockAt(37, 7, "dirt_block");
-        this.createBlockAt(38, 7, "dirt_block");
-
-        this.createBlockAt(50, 4, "dirt_block");
-        this.createBlockAt(51, 4, "dirt_block");
-        this.createBlockAt(52, 5, "dirt_block");
-        this.createBlockAt(53, 6, "dirt_block");
+        this.createBlockAt(11, 1, "dirt_block");
+        this.createBlockAt(12, 2, "dirt_block");
+        this.createBlockAt(13, 3, "dirt_block");
 
         // Create extended floor - cover much more ground for the larger world
         const blocksPerRow = Math.ceil(worldWidth / this.blockSize);
