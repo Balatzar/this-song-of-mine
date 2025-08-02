@@ -20,22 +20,19 @@ export class Level1 extends BaseLevel {
 
     getInstrumentConfig() {
         return {
-            availableInstruments: ["Kick", "Snare", "Hi-Hat"],
+            availableInstruments: ["Hi-Hat"],
             budgetConfig: {
-                Kick: { max: 4, unlimited: false },
-                Snare: { max: 2, unlimited: false },
                 "Hi-Hat": { max: 0, unlimited: true },
-                "Open Hat": { max: 0, unlimited: false },
             },
         };
     }
 
     getMeasureCount() {
-        return 4; // Level 1 uses 4 measures
+        return 1;
     }
 
     getMaxLoops() {
-        return 2; // Level 1 uses 2 loops
+        return 1;
     }
 
     create() {
@@ -52,41 +49,9 @@ export class Level1 extends BaseLevel {
         const startPos = this.getPlayerStartPosition();
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
 
-        // Create snail enemies
-        const snail1 = new Snail(this.scene, 15, 1, 0, 0, this.player, 4 * 64);
-        const snail2 = new Snail(this.scene, 25, 1, 0, 0, this.player, 4 * 64);
-        this.addEnemy(snail1);
-        this.addEnemy(snail2);
-
         // Create exit sign
-        const exitSign = new ExitSign(this.scene, 30, 1, 0, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 6, 1, 10, 0, this.player);
         this.addLevelObject(exitSign);
-
-        // Create level-specific blocks and platforms
-        this.createBlockAt(6, 2, "bricks_brown", -30, -20);
-        this.createBlockAt(11, 1, "bricks_brown", -20, -20);
-        this.createBlockAt(11, 2, "bricks_brown", -20, -20);
-        this.createBlockAt(12, 2, "bricks_brown", -20, -20);
-        this.createBlockAt(12, 3, "bricks_brown", -20, -20);
-
-        // Create one-way platform
-        const oneWayPlatform = new OneWayPlatform(
-            this.scene,
-            7,
-            2,
-            -20,
-            10,
-            this.player
-        );
-        this.addLevelObject(oneWayPlatform);
-
-        // Create bridge segments
-        const bridge1 = new Bridge(this.scene, 8, 2, -0, 3, this.player);
-        const bridge2 = new Bridge(this.scene, 9, 2, -20, 3, this.player);
-        const bridge3 = new Bridge(this.scene, 10, 2, -20, 3, this.player);
-        this.addLevelObject(bridge1);
-        this.addLevelObject(bridge2);
-        this.addLevelObject(bridge3);
 
         console.log("Level 1 created successfully");
     }
