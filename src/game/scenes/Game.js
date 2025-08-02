@@ -14,7 +14,7 @@ export class Game extends Scene {
         // Level management
         this.currentLevel = null;
         // this.availableLevels = [Level1, Level2, Level3];
-        this.availableLevels = [Level2, Level3];
+        this.availableLevels = [Level3];
         this.currentLevelIndex = 0;
 
         // Sequencer state management

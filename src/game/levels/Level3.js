@@ -1,43 +1,36 @@
 import { BaseLevel } from "./BaseLevel";
 import { Player } from "../objects/Player";
 import { ExitSign } from "../objects/ExitSign";
+import { Snail } from "../objects/Snail";
 
-/**
- * Level 3 - A very simple level with player and exit sign next to each other
- */
 export class Level3 extends BaseLevel {
     constructor(scene) {
         super(scene);
     }
 
     getPlayerStartPosition() {
-        // Simple starting position close to the left
-        return { x: 100, y: null }; // y will be calculated by Player class
+        return { x: 200, y: null }; // y will be calculated by Player class
     }
 
     getInstrumentConfig() {
         return {
-            availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat"],
+            availableInstruments: ["Kick", "Hi-Hat"],
             budgetConfig: {
-                Kick: { max: 6, unlimited: false },
-                Snare: { max: 4, unlimited: false },
+                Kick: { max: 0, unlimited: true },
                 "Hi-Hat": { max: 0, unlimited: true },
-                "Open Hat": { max: 0, unlimited: true },
             },
         };
     }
 
     getMeasureCount() {
-        return 4;
+        return 1;
     }
 
     getMaxLoops() {
-        return 3; // Level 3 uses 3 loops for more challenge
+        return 4;
     }
 
     create() {
-        console.log("Creating Level 3...");
-
         // Create extended floor
         const worldWidth = this.scene.physics.world.bounds.width;
         const blocksPerRow = Math.ceil(worldWidth / this.scene.blockSize);
@@ -49,13 +42,13 @@ export class Level3 extends BaseLevel {
         const startPos = this.getPlayerStartPosition();
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
 
-        // Create exit sign very close to the player - just a few blocks to the right
-        const exitSign = new ExitSign(this.scene, 3, 1, 0, 0, this.player);
-        this.addLevelObject(exitSign);
+        this.createBlockAt(6, 1, "bricks_brown", 0, 0);
 
-        console.log(
-            "Level 3 created successfully - simple level with exit nearby"
-        );
+        const snail1 = new Snail(this.scene, 15, 1, 0, 0, this.player, 4 * 64);
+        this.addEnemy(snail1);
+
+        const exitSign = new ExitSign(this.scene, 16, 1, 0, 0, this.player);
+        this.addLevelObject(exitSign);
     }
 }
 
