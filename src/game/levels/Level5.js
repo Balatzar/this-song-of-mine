@@ -5,7 +5,7 @@ import { ExitSign } from "../objects/ExitSign";
 import { OneWayPlatform } from "../objects/OneWayPlatform";
 import { Bridge } from "../objects/Bridge";
 
-export class Level10 extends BaseLevel {
+export class Level5 extends BaseLevel {
     constructor(scene) {
         super(scene);
     }

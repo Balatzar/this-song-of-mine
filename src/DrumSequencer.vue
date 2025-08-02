@@ -590,6 +590,31 @@ const getBudgetDisplay = computed(() => {
     };
 });
 
+// Computed property to calculate budget fill percentage for progress bar effect
+const getBudgetFillPercentage = computed(() => {
+    return (trackName) => {
+        const config = budgetConfig.value[trackName];
+        if (!config || config.unlimited) {
+            return 0;
+        }
+        const usage = budgetUsage.value[trackName];
+        const max = config.max;
+        return max > 0 ? (usage / max) * 100 : 0;
+    };
+});
+
+// Computed property to determine if budget indicator should show instrument color
+const shouldShowInstrumentColor = computed(() => {
+    return (trackName) => {
+        const config = budgetConfig.value[trackName];
+        if (!config || config.unlimited) {
+            return false;
+        }
+        // Show instrument color when there are beats placed and instrument has a budget
+        return budgetUsage.value[trackName] > 0;
+    };
+});
+
 // Global mouse up handler for drawing
 const globalStopDrawing = () => {
     if (isDrawing.value && !hasMoved.value) {
@@ -717,6 +742,26 @@ onUnmounted(() => {
                         class="budget-indicator"
                         :class="{
                             'budget-exceeded': isBudgetExceeded(track.name),
+                        }"
+                        :style="{
+                            background: shouldShowInstrumentColor(track.name)
+                                ? `linear-gradient(to right, ${
+                                      track.color
+                                  }33 ${getBudgetFillPercentage(
+                                      track.name
+                                  )}%, rgba(0, 0, 0, 0.1) ${getBudgetFillPercentage(
+                                      track.name
+                                  )}%)`
+                                : 'rgba(0, 0, 0, 0.1)',
+                            borderColor: shouldShowInstrumentColor(track.name)
+                                ? track.color
+                                : 'transparent',
+                            color: shouldShowInstrumentColor(track.name)
+                                ? '#333' // Darker text for better visibility
+                                : '#666',
+                            fontWeight: shouldShowInstrumentColor(track.name)
+                                ? 'bold' // Make text bold when colored
+                                : 'normal',
                         }"
                     >
                         {{ getBudgetDisplay(track.name) }}
@@ -998,6 +1043,10 @@ onUnmounted(() => {
     padding: 2px 4px;
     border-radius: 3px;
     line-height: 1;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 .budget-indicator.budget-exceeded {
