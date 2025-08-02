@@ -272,18 +272,23 @@ export class Player {
             this.simulatedKeys.jump;
         const isDashPressed = this.shiftKey.isDown || this.simulatedKeys.dash;
 
-        // Check for dash input (dash key + movement keys, only while airborne)
+        // Check for dash input (dash key only, direction based on current facing)
         if (
             isDashPressed &&
             !this.isDashing &&
             !this.sprite.body.touching.down
         ) {
+            // If direction keys are pressed, use those to set facing direction first
             if (isLeftPressed) {
                 this.sprite.setFlipX(true); // Face left before dashing
                 this.performDash();
                 return; // Exit early to prevent regular movement
             } else if (isRightPressed) {
                 this.sprite.setFlipX(false); // Face right before dashing
+                this.performDash();
+                return; // Exit early to prevent regular movement
+            } else {
+                // No direction key pressed, dash in current facing direction
                 this.performDash();
                 return; // Exit early to prevent regular movement
             }
