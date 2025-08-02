@@ -15,8 +15,7 @@ export class Game extends Scene {
 
         // Level management
         this.currentLevel = null;
-        // this.availableLevels = [Level1, Level2, Level3];
-        this.availableLevels = [Level5];
+        this.availableLevels = [Level1, Level2, Level3, Level4, Level5];
         this.currentLevelIndex = 0;
 
         // Sequencer state management
@@ -103,6 +102,9 @@ export class Game extends Scene {
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
         EventBus.on("switch-level", this.onSwitchLevel, this);
         EventBus.on("request-current-level", this.onRequestCurrentLevel, this);
+
+        // Listen for victory event
+        EventBus.on("player-won", this.onPlayerWon, this);
 
         EventBus.emit("current-scene-ready", this);
     }
@@ -339,6 +341,69 @@ export class Game extends Scene {
         }
     }
 
+    /**
+     * Handle player victory - freeze game, show victory screen, then proceed to next level
+     */
+    onPlayerWon() {
+        console.log("Player won! Starting victory sequence...");
+
+        // Freeze the game by pausing physics
+        this.physics.pause();
+
+        // Stop the sequencer
+        EventBus.emit("sequencer-stopped");
+
+        // Show victory screen for 2 seconds, then proceed to next level
+        this.time.delayedCall(2000, () => {
+            this.proceedToNextLevel();
+        });
+    }
+
+    /**
+     * Proceed to the next level or restart from level 1 if all levels completed
+     */
+    proceedToNextLevel() {
+        console.log("Proceeding to next level...");
+
+        // Resume physics before switching levels
+        this.physics.resume();
+
+        // Calculate next level index (cycle back to 0 if we've completed all levels)
+        const nextLevelIndex =
+            (this.currentLevelIndex + 1) % this.availableLevels.length;
+
+        // Check if we completed all levels
+        if (
+            nextLevelIndex === 0 &&
+            this.currentLevelIndex === this.availableLevels.length - 1
+        ) {
+            console.log("All levels completed! Starting over from Level 1.");
+        }
+
+        this.currentLevelIndex = nextLevelIndex;
+        this.loadLevel(this.currentLevelIndex);
+
+        // Reset game state when switching levels
+        this.onGameReset();
+
+        // Get level-specific configuration for the event
+        const instrumentConfig = this.currentLevel.getInstrumentConfig();
+        const measureCount = this.currentLevel.getMeasureCount();
+        const maxLoops = this.currentLevel.getMaxLoops();
+
+        // Emit level change event for UI updates
+        EventBus.emit("level-changed", {
+            levelIndex: this.currentLevelIndex,
+            levelNumber: this.currentLevelIndex + 1,
+            levelName: `Level ${this.currentLevelIndex + 1}`,
+            instrumentConfig: instrumentConfig,
+            measureCount: measureCount,
+            maxLoops: maxLoops,
+        });
+
+        console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
+    }
+
     update() {
         // Update collision visualization if enabled
         if (this.showCollisions) {
@@ -378,6 +443,7 @@ export class Game extends Scene {
         EventBus.off("toggle-grid", this.onToggleGrid, this);
         EventBus.off("toggle-collisions", this.onToggleCollisions, this);
         EventBus.off("switch-level", this.onSwitchLevel, this);
+        EventBus.off("player-won", this.onPlayerWon, this);
         super.destroy();
     }
 }

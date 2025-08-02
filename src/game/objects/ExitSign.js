@@ -68,9 +68,6 @@ export class ExitSign {
     }
 
     showWinMessage() {
-        // Emit player won event to stop the sequencer
-        EventBus.emit("player-won");
-
         // Create win text
         const winText = this.scene.add.text(
             this.scene.cameras.main.centerX,
@@ -91,16 +88,26 @@ export class ExitSign {
         // Make sure it's always visible (fixed to camera)
         winText.setScrollFactor(0);
 
-        // Optional: Add some visual effects
+        // Add scaling animation for 2 seconds
         this.scene.tweens.add({
             targets: winText,
             scaleX: 1.2,
             scaleY: 1.2,
-            duration: 1000,
+            duration: 500,
             yoyo: true,
-            repeat: -1,
+            repeat: 1,
             ease: "Sine.easeInOut",
         });
+
+        // Remove the text after 2 seconds
+        this.scene.time.delayedCall(2000, () => {
+            if (winText && winText.active) {
+                winText.destroy();
+            }
+        });
+
+        // Emit player won event (Game scene will handle the rest)
+        EventBus.emit("player-won");
 
         console.log("Player reached the exit! You win!");
     }
