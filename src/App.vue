@@ -1,10 +1,27 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import PhaserGame from "./PhaserGame.vue";
 import DrumSequencer from "./DrumSequencer.vue";
+import { EventBus } from "./game/EventBus";
 
 //  References to the PhaserGame component (game and scene are exposed)
 const phaserRef = ref();
+
+// Level state for sequencer title
+const currentLevelName = ref("Level 1");
+
+// Event handlers
+const handleLevelChanged = (levelData) => {
+    currentLevelName.value = levelData.levelName;
+};
+
+onMounted(() => {
+    EventBus.on("level-changed", handleLevelChanged);
+});
+
+onUnmounted(() => {
+    EventBus.off("level-changed", handleLevelChanged);
+});
 </script>
 
 <template>
@@ -13,7 +30,7 @@ const phaserRef = ref();
             <PhaserGame ref="phaserRef" />
         </div>
         <div class="ui-section">
-            <DrumSequencer title="Level 1" />
+            <DrumSequencer :title="currentLevelName" />
         </div>
     </div>
 </template>

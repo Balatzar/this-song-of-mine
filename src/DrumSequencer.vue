@@ -479,6 +479,11 @@ const createDebugPattern = () => {
     updateBudgetUsage();
 };
 
+const switchLevel = () => {
+    // Emit event to switch to next level
+    EventBus.emit("switch-level");
+};
+
 // Listen for game scene ready signal
 EventBus.on("sequencer-ready-to-play", () => {
     console.log("Received sequencer-ready-to-play signal", {
@@ -572,6 +577,16 @@ onUnmounted(() => {
                 title="Create debug pattern"
             >
                 🥁
+            </button>
+            <button
+                v-if="isDevelopment"
+                class="control-btn debug-btn"
+                @click="switchLevel"
+                :disabled="isPlaying"
+                :class="{ disabled: isPlaying }"
+                title="Switch to next level"
+            >
+                🔄
             </button>
 
             <div class="bpm-control">

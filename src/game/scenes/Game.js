@@ -1,17 +1,19 @@
 import { EventBus } from "../EventBus";
 import { Scene } from "phaser";
 import { DebugTools } from "../debug";
-import { ExitSign } from "../objects/ExitSign";
-import { OneWayPlatform } from "../objects/OneWayPlatform";
-import { Player } from "../objects/Player";
-import { Bridge } from "../objects/Bridge";
-import { Snail } from "../objects/Snail";
+import { Level1 } from "../levels/Level1";
+import { Level2 } from "../levels/Level2";
 
 export class Game extends Scene {
     constructor() {
         super("Game");
         this.blockSize = 64;
         this.blockOffset = 32;
+
+        // Level management
+        this.currentLevel = null;
+        this.availableLevels = [Level1, Level2];
+        this.currentLevelIndex = 0;
 
         // Sequencer state management
         this.isSequencerMode = false;
@@ -53,20 +55,16 @@ export class Game extends Scene {
     resetMovingObjectsToInitialPositions() {
         console.log("Resetting moving objects to initial positions...");
 
-        // Reset player
-        if (this.player) {
-            this.player.resetToInitialState();
-            console.log("Player reset to initial position");
-        }
+        if (this.currentLevel) {
+            // Reset player
+            if (this.currentLevel.player) {
+                this.currentLevel.player.resetToInitialState();
+                console.log("Player reset to initial position");
+            }
 
-        // Reset snail
-        if (this.snail1) {
-            this.snail1.resetToInitialState();
-            console.log("Snail reset to initial position");
-        }
-        if (this.snail2) {
-            this.snail2.resetToInitialState();
-            console.log("Snail reset to initial position");
+            // Reset all level objects (including enemies)
+            this.currentLevel.resetToInitialState();
+            console.log("Level objects reset to initial positions");
         }
     }
 
@@ -83,51 +81,13 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
-        // Create extended floor - cover much more ground for the larger world
-        const blocksPerRow = Math.ceil(worldWidth / this.blockSize);
-        for (let x = 0; x < blocksPerRow; x++) {
-            this.createBlockAt(x, 0, "dirt_block");
-        }
-
-        // Create player using the Player class
-        this.player = new Player(this, this.platforms, 200);
-
-        // Create snail enemy
-        this.snail1 = new Snail(this, 15, 1, 0, 0, this.player, 4 * 64);
-        this.snail2 = new Snail(this, 25, 1, 0, 0, this.player, 4 * 64);
-
-        // Player animations and controls are now handled by the Player class
-
-        new ExitSign(this, 30, 1, 0, 0, this.player);
-
-        this.createBlockAt(6, 2, "bricks_brown", -30, -20);
-        this.createBlockAt(11, 1, "bricks_brown", -20, -20);
-        this.createBlockAt(11, 2, "bricks_brown", -20, -20);
-        this.createBlockAt(12, 2, "bricks_brown", -20, -20);
-        this.createBlockAt(12, 3, "bricks_brown", -20, -20);
-
-        new OneWayPlatform(this, 7, 2, -20, 10, this.player);
-
-        new Bridge(this, 8, 2, -0, 3, this.player);
-        new Bridge(this, 9, 2, -20, 3, this.player);
-        new Bridge(this, 10, 2, -20, 3, this.player);
+        // Initialize level system
+        this.loadLevel(this.currentLevelIndex);
 
         // Debug tools - all disabled by default but can be toggled with controls
-
-        // Grid overlay - not created by default, but can be toggled with 'G' key
-        // (Grid will be created when first toggled)
-
-        // Player debug info - not created by default, but can be toggled with 'P' key
-        // (Debug info will be created when first toggled)
-
-        // Collision zone visualization - disabled by default
         this.showCollisions = false;
 
-        // Add keyboard controls for toggling debug features
-        // C = Toggle collision zones, G = Toggle grid overlay, P = Toggle player debug info
-        this.debugKeys = this.input.keyboard.addKeys("C,G,P");
-
-        // Listen for sequencer events (for future use)
+        // Listen for sequencer events
         EventBus.on("sequencer-started", this.onSequencerStarted, this);
         EventBus.on("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.on("sequencer-step", this.onSequencerStep, this);
@@ -137,8 +97,62 @@ export class Game extends Scene {
         // Listen for debug toggle events
         EventBus.on("toggle-grid", this.onToggleGrid, this);
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
+        EventBus.on("switch-level", this.onSwitchLevel, this);
 
         EventBus.emit("current-scene-ready", this);
+    }
+
+    /**
+     * Load and initialize a specific level
+     * @param {number} levelIndex - Index of the level to load
+     */
+    loadLevel(levelIndex) {
+        console.log(`Loading level ${levelIndex + 1}...`);
+
+        // Clean up current level
+        if (this.currentLevel) {
+            this.currentLevel.destroy();
+        }
+
+        // Clear platforms group
+        this.platforms.clear(true, true);
+
+        // Create new level instance
+        const LevelClass = this.availableLevels[levelIndex];
+        this.currentLevel = new LevelClass(this);
+
+        // Create the level content
+        this.currentLevel.create();
+
+        // Emit level change event for UI updates
+        EventBus.emit("level-changed", {
+            levelIndex: levelIndex,
+            levelNumber: levelIndex + 1,
+            levelName: `Level ${levelIndex + 1}`,
+        });
+
+        console.log(`Level ${levelIndex + 1} loaded successfully`);
+    }
+
+    /**
+     * Switch to the next level (for debugging)
+     */
+    switchToNextLevel() {
+        this.currentLevelIndex =
+            (this.currentLevelIndex + 1) % this.availableLevels.length;
+        this.loadLevel(this.currentLevelIndex);
+
+        // Reset game state when switching levels
+        this.onGameReset();
+
+        // Emit level change event for UI updates
+        EventBus.emit("level-changed", {
+            levelIndex: this.currentLevelIndex,
+            levelNumber: this.currentLevelIndex + 1,
+            levelName: `Level ${this.currentLevelIndex + 1}`,
+        });
+
+        console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
     }
 
     onSequencerStarted(data) {
@@ -184,7 +198,12 @@ export class Game extends Scene {
         );
 
         // Only process if we're in sequencer mode and player exists
-        if (!this.isSequencerMode || !this.player) return;
+        if (
+            !this.isSequencerMode ||
+            !this.currentLevel ||
+            !this.currentLevel.player
+        )
+            return;
 
         // Update current loop state
         this.currentLoop = data.currentLoop || 0;
@@ -196,7 +215,7 @@ export class Game extends Scene {
         const { activeBeats } = data;
 
         // Use the player's sequencer movement handler
-        this.player.handleSequencerMovement(activeBeats);
+        this.currentLevel.player.handleSequencerMovement(activeBeats);
     }
 
     onGameTimeUp() {
@@ -278,33 +297,11 @@ export class Game extends Scene {
         DebugTools.setCollisionZonesVisible(this, visible);
     }
 
+    onSwitchLevel() {
+        this.switchToNextLevel();
+    }
+
     update() {
-        // Debug controls
-        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.C)) {
-            DebugTools.toggleCollisionZones(this);
-        }
-
-        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.G)) {
-            // Create grid overlay if it doesn't exist yet
-            if (!this.gridGraphics) {
-                DebugTools.createGridOverlay(this, this.blockSize);
-            }
-            DebugTools.toggleGrid(this);
-        }
-
-        if (Phaser.Input.Keyboard.JustDown(this.debugKeys.P)) {
-            // Toggle player debug info
-            if (!this.playerDebugText) {
-                this.playerDebugText = DebugTools.createBodyDebugInfo(
-                    this,
-                    this.player.getBody(),
-                    "Player"
-                );
-            } else {
-                this.playerDebugText.visible = !this.playerDebugText.visible;
-            }
-        }
-
         // Update collision visualization if enabled
         if (this.showCollisions) {
             DebugTools.showCollisionZones(this, {
@@ -316,22 +313,25 @@ export class Game extends Scene {
             });
         }
 
-        // Update player using the Player class
-        if (this.player) {
-            this.player.update();
-        }
+        // Update current level (handles player and all level objects)
+        if (this.currentLevel) {
+            this.currentLevel.update();
 
-        // Update snail enemy
-        if (this.snail1) {
-            this.snail1.update();
-        }
-        if (this.snail2) {
-            this.snail2.update();
+            // Update player specifically (if it exists)
+            if (this.currentLevel.player) {
+                this.currentLevel.player.update();
+            }
         }
     }
 
     // Clean up event listeners when scene is destroyed
     destroy() {
+        // Clean up current level
+        if (this.currentLevel) {
+            this.currentLevel.destroy();
+            this.currentLevel = null;
+        }
+
         EventBus.off("sequencer-started", this.onSequencerStarted, this);
         EventBus.off("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.off("sequencer-step", this.onSequencerStep, this);
@@ -339,6 +339,7 @@ export class Game extends Scene {
         EventBus.off("game-reset", this.onGameReset, this);
         EventBus.off("toggle-grid", this.onToggleGrid, this);
         EventBus.off("toggle-collisions", this.onToggleCollisions, this);
+        EventBus.off("switch-level", this.onSwitchLevel, this);
         super.destroy();
     }
 }

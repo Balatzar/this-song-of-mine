@@ -1,0 +1,124 @@
+/**
+ * Base class for all game levels
+ * Defines the interface that all levels must implement
+ */
+export class BaseLevel {
+    constructor(scene) {
+        this.scene = scene;
+        this.player = null;
+        this.enemies = [];
+        this.levelObjects = [];
+    }
+
+    /**
+     * Initialize the level - create all level-specific content
+     * This method must be implemented by all level subclasses
+     */
+    create() {
+        throw new Error("Level must implement create() method");
+    }
+
+    /**
+     * Get the player starting position for this level
+     * @returns {{x: number, y: number}} Player starting position in pixels
+     */
+    getPlayerStartPosition() {
+        throw new Error("Level must implement getPlayerStartPosition() method");
+    }
+
+    /**
+     * Update level-specific logic
+     * Called every frame
+     */
+    update() {
+        // Update all enemies
+        this.enemies.forEach((enemy) => {
+            if (enemy && enemy.update) {
+                enemy.update();
+            }
+        });
+
+        // Update all level objects
+        this.levelObjects.forEach((obj) => {
+            if (obj && obj.update) {
+                obj.update();
+            }
+        });
+    }
+
+    /**
+     * Reset all level objects to their initial state
+     * Used when the sequencer starts/stops or game resets
+     */
+    resetToInitialState() {
+        // Reset all enemies
+        this.enemies.forEach((enemy) => {
+            if (enemy && enemy.resetToInitialState) {
+                enemy.resetToInitialState();
+            }
+        });
+
+        // Reset all level objects
+        this.levelObjects.forEach((obj) => {
+            if (obj && obj.resetToInitialState) {
+                obj.resetToInitialState();
+            }
+        });
+    }
+
+    /**
+     * Clean up level resources
+     */
+    destroy() {
+        // Destroy enemies
+        this.enemies.forEach((enemy) => {
+            if (enemy && enemy.destroy) {
+                enemy.destroy();
+            }
+        });
+        this.enemies = [];
+
+        // Destroy level objects
+        this.levelObjects.forEach((obj) => {
+            if (obj && obj.destroy) {
+                obj.destroy();
+            }
+        });
+        this.levelObjects = [];
+
+        // Destroy player if it exists
+        if (this.player && this.player.destroy) {
+            this.player.destroy();
+        }
+        this.player = null;
+    }
+
+    /**
+     * Helper method to create a block at block coordinates
+     * This uses the scene's createBlockAt method
+     */
+    createBlockAt(blockX, blockY, texture, offsetX = 0, offsetY = 0) {
+        return this.scene.createBlockAt(
+            blockX,
+            blockY,
+            texture,
+            offsetX,
+            offsetY
+        );
+    }
+
+    /**
+     * Add an enemy to this level
+     */
+    addEnemy(enemy) {
+        this.enemies.push(enemy);
+    }
+
+    /**
+     * Add a level object to this level
+     */
+    addLevelObject(obj) {
+        this.levelObjects.push(obj);
+    }
+}
+
