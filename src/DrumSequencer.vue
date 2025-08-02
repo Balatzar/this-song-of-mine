@@ -921,5 +921,96 @@ onUnmounted(() => {
         transform: scale(1);
     }
 }
+
+/* Mobile styles for screens smaller than 768px */
+@media (max-width: 767px) {
+    .controls {
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    /* Hide the debug button on mobile */
+    .control-btn.debug-btn {
+        display: none;
+    }
+
+    /* Hide labels in BPM control on mobile */
+    .bpm-control label {
+        display: none;
+    }
+
+    /* Hide labels in loop counter on mobile */
+    .loop-counter label {
+        display: none;
+    }
+
+    /* Make controls more compact on mobile */
+    .control-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+        min-width: 40px;
+        flex-shrink: 0;
+    }
+
+    .bpm-control,
+    .loop-counter {
+        padding: 6px 10px;
+        flex-shrink: 0;
+    }
+
+    /* Make drum grid horizontally scrollable on mobile */
+    .drum-grid {
+        overflow-x: auto;
+        padding-bottom: 10px;
+    }
+
+    .track-row {
+        min-width: 600px; /* Ensure minimum width to trigger horizontal scroll */
+    }
+
+    /* Make track labels sticky and smaller on mobile */
+    .track-label {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+        width: 60px;
+        padding: 6px;
+        font-size: 10px;
+    }
+
+    .instrument-symbol img {
+        width: 16px;
+        height: 16px;
+    }
+
+    .ability-name {
+        font-size: 8px;
+    }
+
+    .budget-indicator {
+        font-size: 8px;
+        padding: 1px 3px;
+    }
+
+    /* Make step buttons smaller */
+    .step-btn {
+        width: 24px;
+        height: 24px;
+    }
+
+    /* Adjust spacing between step groups */
+    .step-btn:nth-child(4n) {
+        margin-right: 8px;
+    }
+
+    .track-steps {
+        gap: 2px;
+        margin-left: 200px;
+    }
+}
 </style>
 
