@@ -27,6 +27,24 @@ export class BaseLevel {
     }
 
     /**
+     * Get the instrument configuration for this level
+     * Defines which instruments are available and their budget limits
+     * @returns {Object} Instrument configuration with availability and budgets
+     */
+    getInstrumentConfig() {
+        // Default configuration - all instruments available with basic budgets
+        return {
+            availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat"],
+            budgetConfig: {
+                Kick: { max: 4, unlimited: false },
+                Snare: { max: 2, unlimited: false },
+                "Hi-Hat": { max: 0, unlimited: true },
+                "Open Hat": { max: 0, unlimited: true },
+            },
+        };
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */

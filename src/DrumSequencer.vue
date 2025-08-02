@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onUnmounted, onMounted } from "vue";
+import { ref, onUnmounted, onMounted, computed } from "vue";
 import { EventBus } from "./game/EventBus";
 
 // Environment detection
@@ -30,13 +30,27 @@ const hasMoved = ref(false); // Track if mouse moved during draw
 const drawingMode = ref(null); // 'activate' or 'deactivate'
 const initialStep = ref({ trackIndex: null, stepIndex: null }); // Track initial step for single click
 
-// Budget configuration
-const budgetConfig = {
+// Level-specific instrument configuration
+const currentLevelConfig = ref({
+    availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat"],
+    budgetConfig: {
+        Kick: { max: 4, unlimited: false },
+        Snare: { max: 2, unlimited: false },
+        "Hi-Hat": { max: 0, unlimited: true },
+        "Open Hat": { max: 0, unlimited: true },
+    },
+});
+
+// Current level index for display
+const currentLevelIndex = ref(0);
+
+// Current budget configuration (updated by level)
+const budgetConfig = ref({
     Kick: { max: 4, unlimited: false },
     Snare: { max: 2, unlimited: false },
     "Hi-Hat": { max: 0, unlimited: true },
     "Open Hat": { max: 0, unlimited: true },
-};
+});
 
 // Budget tracking
 const budgetUsage = ref({
@@ -153,7 +167,9 @@ const updateBudgetUsage = () => {
 };
 
 const canAddBeat = (trackName) => {
-    const config = budgetConfig[trackName];
+    if (!budgetConfig.value) return false; // No config available yet
+    const config = budgetConfig.value[trackName];
+    if (!config) return false; // Instrument not available in current level
     if (config.unlimited) return true;
 
     const currentUsage = countBeats(trackName);
@@ -161,7 +177,9 @@ const canAddBeat = (trackName) => {
 };
 
 const isBudgetExceeded = (trackName) => {
-    const config = budgetConfig[trackName];
+    if (!budgetConfig.value) return false; // No config available yet
+    const config = budgetConfig.value[trackName];
+    if (!config) return true; // Instrument not available in current level
     if (config.unlimited) return false;
 
     const currentUsage = countBeats(trackName);
@@ -484,6 +502,31 @@ const switchLevel = () => {
     EventBus.emit("switch-level");
 };
 
+// Update instrument configuration when level changes
+const updateInstrumentConfig = (levelData) => {
+    if (levelData.instrumentConfig) {
+        currentLevelConfig.value = levelData.instrumentConfig;
+        budgetConfig.value = { ...levelData.instrumentConfig.budgetConfig };
+        currentLevelIndex.value = levelData.levelIndex;
+
+        // Reset all patterns when switching levels
+        tracks.value.forEach((track) => {
+            track.pattern = new Array(steps).fill(false);
+        });
+
+        // Reset budget usage
+        budgetUsage.value = {
+            Kick: 0,
+            Snare: 0,
+            "Hi-Hat": 0,
+            "Open Hat": 0,
+        };
+
+        // Update budget usage display
+        updateBudgetUsage();
+    }
+};
+
 // Listen for game scene ready signal
 EventBus.on("sequencer-ready-to-play", () => {
     console.log("Received sequencer-ready-to-play signal", {
@@ -507,6 +550,30 @@ EventBus.on("player-won", () => {
     stop();
 });
 
+// Listen for level changes to update instrument configuration
+EventBus.on("level-changed", updateInstrumentConfig);
+
+// Computed property to filter tracks based on level availability
+const availableTracks = computed(() => {
+    return tracks.value.filter((track) =>
+        currentLevelConfig.value.availableInstruments.includes(track.name)
+    );
+});
+
+// Computed property for budget display
+const getBudgetDisplay = computed(() => {
+    return (trackName) => {
+        const config = budgetConfig.value[trackName];
+        if (!config) {
+            return "N/A";
+        }
+        if (config.unlimited) {
+            return "Unlimited";
+        }
+        return `${budgetUsage.value[trackName]}/${config.max}`;
+    };
+});
+
 // Global mouse up handler for drawing
 const globalStopDrawing = () => {
     if (isDrawing.value && !hasMoved.value) {
@@ -526,6 +593,11 @@ onMounted(() => {
     document.addEventListener("mouseleave", globalStopDrawing);
     // Initialize budget usage
     updateBudgetUsage();
+
+    // Request current level info from the game when component mounts
+    setTimeout(() => {
+        EventBus.emit("request-current-level");
+    }, 100);
 });
 
 // Cleanup
@@ -541,6 +613,7 @@ onUnmounted(() => {
     // Clean up event listeners
     EventBus.off("sequencer-ready-to-play");
     EventBus.off("player-won");
+    EventBus.off("level-changed", updateInstrumentConfig);
     document.removeEventListener("mouseup", globalStopDrawing);
     document.removeEventListener("mouseleave", globalStopDrawing);
 });
@@ -613,7 +686,7 @@ onUnmounted(() => {
         <!-- Drum Grid -->
         <div class="drum-grid">
             <div
-                v-for="(track, trackIndex) in tracks"
+                v-for="(track, trackIndex) in availableTracks"
                 :key="track.name"
                 class="track-row"
             >
@@ -630,14 +703,7 @@ onUnmounted(() => {
                             'budget-exceeded': isBudgetExceeded(track.name),
                         }"
                     >
-                        <span v-if="budgetConfig[track.name].unlimited">
-                            Unlimited
-                        </span>
-                        <span v-else>
-                            {{ budgetUsage[track.name] }}/{{
-                                budgetConfig[track.name].max
-                            }}
-                        </span>
+                        {{ getBudgetDisplay(track.name) }}
                     </div>
                 </div>
                 <div class="track-steps">
@@ -658,9 +724,25 @@ onUnmounted(() => {
                                     ? 0.8
                                     : 1,
                         }"
-                        @mousedown="startDrawing(trackIndex, stepIndex, $event)"
-                        @mouseenter="continueDrawing(trackIndex, stepIndex)"
-                        @mouseup="stopDrawing(trackIndex, stepIndex)"
+                        @mousedown="
+                            startDrawing(
+                                tracks.findIndex((t) => t.name === track.name),
+                                stepIndex,
+                                $event
+                            )
+                        "
+                        @mouseenter="
+                            continueDrawing(
+                                tracks.findIndex((t) => t.name === track.name),
+                                stepIndex
+                            )
+                        "
+                        @mouseup="
+                            stopDrawing(
+                                tracks.findIndex((t) => t.name === track.name),
+                                stepIndex
+                            )
+                        "
                     ></button>
                 </div>
             </div>

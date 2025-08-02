@@ -18,6 +18,18 @@ export class Level1 extends BaseLevel {
         return { x: 200, y: null }; // y will be calculated by Player class
     }
 
+    getInstrumentConfig() {
+        return {
+            availableInstruments: ["Kick", "Snare", "Hi-Hat"],
+            budgetConfig: {
+                Kick: { max: 4, unlimited: false },
+                Snare: { max: 2, unlimited: false },
+                "Hi-Hat": { max: 0, unlimited: true },
+                "Open Hat": { max: 0, unlimited: false },
+            },
+        };
+    }
+
     create() {
         console.log("Creating Level 1...");
 

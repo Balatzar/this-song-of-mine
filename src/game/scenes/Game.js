@@ -99,6 +99,7 @@ export class Game extends Scene {
         EventBus.on("toggle-grid", this.onToggleGrid, this);
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
         EventBus.on("switch-level", this.onSwitchLevel, this);
+        EventBus.on("request-current-level", this.onRequestCurrentLevel, this);
 
         EventBus.emit("current-scene-ready", this);
     }
@@ -125,11 +126,15 @@ export class Game extends Scene {
         // Create the level content
         this.currentLevel.create();
 
+        // Get level-specific instrument configuration
+        const instrumentConfig = this.currentLevel.getInstrumentConfig();
+
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
             levelIndex: levelIndex,
             levelNumber: levelIndex + 1,
             levelName: `Level ${levelIndex + 1}`,
+            instrumentConfig: instrumentConfig,
         });
 
         console.log(`Level ${levelIndex + 1} loaded successfully`);
@@ -300,6 +305,19 @@ export class Game extends Scene {
 
     onSwitchLevel() {
         this.switchToNextLevel();
+    }
+
+    onRequestCurrentLevel() {
+        // Send current level info when requested
+        if (this.currentLevel) {
+            const instrumentConfig = this.currentLevel.getInstrumentConfig();
+            EventBus.emit("level-changed", {
+                levelIndex: this.currentLevelIndex,
+                levelNumber: this.currentLevelIndex + 1,
+                levelName: `Level ${this.currentLevelIndex + 1}`,
+                instrumentConfig: instrumentConfig,
+            });
+        }
     }
 
     update() {

@@ -17,6 +17,18 @@ export class Level2 extends BaseLevel {
         return { x: 150, y: null }; // y will be calculated by Player class
     }
 
+    getInstrumentConfig() {
+        return {
+            availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat"],
+            budgetConfig: {
+                Kick: { max: 4, unlimited: false },
+                Snare: { max: 2, unlimited: false },
+                "Hi-Hat": { max: 0, unlimited: true },
+                "Open Hat": { max: 1, unlimited: false },
+            },
+        };
+    }
+
     create() {
         console.log("Creating Level 2...");
 
@@ -30,41 +42,6 @@ export class Level2 extends BaseLevel {
         // Create player at the starting position
         const startPos = this.getPlayerStartPosition();
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
-
-        // Create a single snail enemy in a different position
-        const snail = new Snail(this.scene, 20, 1, 0, 0, this.player, 6 * 64);
-        this.addEnemy(snail);
-
-        // Create exit sign closer to the start for this simple level
-        const exitSign = new ExitSign(this.scene, 25, 1, 0, 0, this.player);
-        this.addLevelObject(exitSign);
-
-        // Create a simple staircase pattern
-        this.createBlockAt(5, 1, "bricks_brown");
-        this.createBlockAt(6, 2, "bricks_brown");
-        this.createBlockAt(7, 3, "bricks_brown");
-        this.createBlockAt(8, 4, "bricks_brown");
-
-        // Create a descending staircase
-        this.createBlockAt(9, 3, "bricks_brown");
-        this.createBlockAt(10, 2, "bricks_brown");
-        this.createBlockAt(11, 1, "bricks_brown");
-
-        // Add some floating platforms
-        this.createBlockAt(13, 3, "bricks_brown");
-        this.createBlockAt(15, 2, "bricks_brown");
-        this.createBlockAt(17, 4, "bricks_brown");
-
-        // Create a one-way platform for variety
-        const oneWayPlatform = new OneWayPlatform(
-            this.scene,
-            14,
-            2,
-            0,
-            0,
-            this.player
-        );
-        this.addLevelObject(oneWayPlatform);
 
         console.log("Level 2 created successfully");
     }
