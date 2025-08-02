@@ -27,7 +27,7 @@ export class Level4 extends BaseLevel {
     }
 
     getMaxLoops() {
-        return 4;
+        return 2;
     }
 
     create() {

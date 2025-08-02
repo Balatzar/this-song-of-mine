@@ -1,3 +1,5 @@
+import { EventBus } from "../EventBus";
+
 /**
  * Snail Enemy game object
  * A simple enemy that moves left and right slowly in a patrol zone
@@ -129,8 +131,8 @@ export class Snail {
     }
 
     killPlayer() {
-        // Reset the level when player dies
-        this.scene.scene.restart();
+        // Emit player death event instead of directly restarting
+        EventBus.emit("player-died");
     }
 
     /**

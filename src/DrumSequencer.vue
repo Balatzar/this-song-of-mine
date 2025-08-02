@@ -584,6 +584,14 @@ EventBus.on("player-won", () => {
     stop();
 });
 
+// Listen for external sequencer stop events (e.g., player death)
+EventBus.on("sequencer-stopped", () => {
+    console.log("External sequencer stop signal received");
+    if (isPlaying.value) {
+        stop();
+    }
+});
+
 // Listen for level changes to update instrument configuration
 EventBus.on("level-changed", updateInstrumentConfig);
 
@@ -672,6 +680,7 @@ onUnmounted(() => {
     // Clean up event listeners
     EventBus.off("sequencer-ready-to-play");
     EventBus.off("player-won");
+    EventBus.off("sequencer-stopped");
     EventBus.off("level-changed", updateInstrumentConfig);
     document.removeEventListener("mouseup", globalStopDrawing);
     document.removeEventListener("mouseleave", globalStopDrawing);

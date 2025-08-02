@@ -95,6 +95,7 @@ export class Game extends Scene {
         EventBus.on("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.on("sequencer-step", this.onSequencerStep, this);
         EventBus.on("game-time-up", this.onGameTimeUp, this);
+        EventBus.on("player-died", this.onPlayerDied, this);
         EventBus.on("game-reset", this.onGameReset, this);
 
         // Listen for debug toggle events
@@ -184,6 +185,19 @@ export class Game extends Scene {
         // Reset moving objects to initial positions
         this.resetMovingObjectsToInitialPositions();
 
+        // Clear any existing messages (victory, time's up, etc.)
+        if (this.gameOverText) {
+            this.gameOverText.destroy();
+            this.gameOverText = null;
+        }
+
+        // Clear ALL text objects to ensure no lingering messages
+        this.children.list.forEach((child) => {
+            if (child.type === "Text") {
+                child.destroy();
+            }
+        });
+
         // Enter sequencer mode and reset game state
         this.isSequencerMode = true;
         this.sequencerData = data;
@@ -249,6 +263,17 @@ export class Game extends Scene {
         this.showGameOverMessage();
     }
 
+    onPlayerDied() {
+        console.log("Player died! Touched a snail.");
+        this.isGameOver = true;
+
+        // Stop the sequencer
+        EventBus.emit("sequencer-stopped");
+
+        // Show death game over message
+        this.showDeathGameOverMessage();
+    }
+
     onGameReset() {
         console.log("Game reset requested");
 
@@ -305,6 +330,45 @@ export class Game extends Scene {
         });
 
         console.log("Game over message displayed");
+    }
+
+    showDeathGameOverMessage() {
+        // Create death game over text
+        const gameOverText = this.add.text(
+            this.cameras.main.centerX,
+            this.cameras.main.centerY - 50,
+            "GAME OVER!\nYou touched a snail!",
+            {
+                fontSize: "48px",
+                fontFamily: "Arial",
+                color: "#ff4444",
+                stroke: "#000000",
+                strokeThickness: 4,
+                align: "center",
+            }
+        );
+
+        // Center the text
+        gameOverText.setOrigin(0.5);
+
+        // Make sure it's always visible (fixed to camera)
+        gameOverText.setScrollFactor(0);
+
+        // Store reference for cleanup
+        this.gameOverText = gameOverText;
+
+        // Add pulsing effect
+        this.tweens.add({
+            targets: gameOverText,
+            scaleX: 1.1,
+            scaleY: 1.1,
+            duration: 500,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+        });
+
+        console.log("Death game over message displayed");
     }
 
     // Debug toggle event handlers
@@ -439,6 +503,7 @@ export class Game extends Scene {
         EventBus.off("sequencer-stopped", this.onSequencerStopped, this);
         EventBus.off("sequencer-step", this.onSequencerStep, this);
         EventBus.off("game-time-up", this.onGameTimeUp, this);
+        EventBus.off("player-died", this.onPlayerDied, this);
         EventBus.off("game-reset", this.onGameReset, this);
         EventBus.off("toggle-grid", this.onToggleGrid, this);
         EventBus.off("toggle-collisions", this.onToggleCollisions, this);
