@@ -79,6 +79,11 @@ const tracks = ref([
 let audioContext = null;
 let intervalId = null;
 
+// Frame-based timing for consistent playback
+let animationFrameId = null;
+let lastStepTime = 0;
+let nextStepTime = 0;
+
 // Simple drum sounds using oscillators
 const createDrumSound = (type) => {
     if (!audioContext) return;
@@ -174,6 +179,11 @@ const togglePlay = async () => {
     await initAudio();
 
     if (isPlaying.value) {
+        // Cancel animation frame instead of clearing interval
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
         clearInterval(intervalId);
         intervalId = null; // Reset intervalId to null
         isPlaying.value = false;
@@ -198,6 +208,11 @@ const togglePlay = async () => {
 };
 
 const stop = () => {
+    // Cancel animation frame
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
     clearInterval(intervalId);
     intervalId = null; // Reset intervalId to null
     isPlaying.value = false;
@@ -214,59 +229,77 @@ const resetGame = () => {
 };
 
 const play = () => {
-    const stepTime = 60000 / (bpm.value * 4); // 16th notes
+    const stepTime = 60000 / (bpm.value * 4); // 16th notes in milliseconds
     console.log(tracks.value);
 
-    intervalId = setInterval(() => {
+    // Initialize timing for frame-based sequencer
+    lastStepTime = performance.now();
+    nextStepTime = lastStepTime + stepTime;
+
+    const tick = (currentTime) => {
         // Skip processing if game is over
         if (isGameOver.value) {
             return;
         }
 
-        // Play sounds for current step
-        tracks.value.forEach((track) => {
-            if (track.pattern[currentStep.value]) {
-                createDrumSound(track.name);
+        // Check if it's time for the next step
+        if (currentTime >= nextStepTime) {
+            // Play sounds for current step
+            tracks.value.forEach((track) => {
+                if (track.pattern[currentStep.value]) {
+                    createDrumSound(track.name);
+                }
+            });
+
+            // Send current step to game
+            EventBus.emit("sequencer-step", {
+                currentStep: currentStep.value,
+                activeBeats: tracks.value.map(
+                    (track) => track.pattern[currentStep.value]
+                ),
+                currentLoop: currentLoop.value,
+                maxLoops: maxLoops,
+                isGameOver: isGameOver.value,
+            });
+
+            // Move to next step
+            const nextStep = (currentStep.value + 1) % steps;
+
+            // Check if we completed a loop (going from step 15 back to 0)
+            if (currentStep.value === steps - 1 && nextStep === 0) {
+                currentLoop.value++;
+                console.log(`Completed loop ${currentLoop.value}/${maxLoops}`);
+
+                // Check if we've reached the limit
+                if (currentLoop.value >= maxLoops) {
+                    isGameOver.value = true;
+                    console.log("Time's up! Game over - resetting...");
+
+                    // Reset the game after a short delay to show the final state
+                    setTimeout(() => {
+                        resetGame();
+                    }, 1000);
+
+                    // Emit game over event
+                    EventBus.emit("game-time-up");
+                    return;
+                }
             }
-        });
 
-        // Send current step to game
-        EventBus.emit("sequencer-step", {
-            currentStep: currentStep.value,
-            activeBeats: tracks.value.map(
-                (track) => track.pattern[currentStep.value]
-            ),
-            currentLoop: currentLoop.value,
-            maxLoops: maxLoops,
-            isGameOver: isGameOver.value,
-        });
+            currentStep.value = nextStep;
 
-        // Move to next step
-        const nextStep = (currentStep.value + 1) % steps;
-
-        // Check if we completed a loop (going from step 15 back to 0)
-        if (currentStep.value === steps - 1 && nextStep === 0) {
-            currentLoop.value++;
-            console.log(`Completed loop ${currentLoop.value}/${maxLoops}`);
-
-            // Check if we've reached the limit
-            if (currentLoop.value >= maxLoops) {
-                isGameOver.value = true;
-                console.log("Time's up! Game over - resetting...");
-
-                // Reset the game after a short delay to show the final state
-                setTimeout(() => {
-                    resetGame();
-                }, 1000);
-
-                // Emit game over event
-                EventBus.emit("game-time-up");
-                return;
-            }
+            // Calculate next step time (maintain consistent intervals)
+            nextStepTime += stepTime;
         }
 
-        currentStep.value = nextStep;
-    }, stepTime);
+        // Continue the animation loop if still playing
+        if (isPlaying.value && !isGameOver.value) {
+            animationFrameId = requestAnimationFrame(tick);
+        }
+    };
+
+    // Start the frame-based loop
+    animationFrameId = requestAnimationFrame(tick);
 };
 
 const toggleStep = (trackIndex, stepIndex) => {
@@ -447,16 +480,16 @@ const createDebugPattern = () => {
 EventBus.on("sequencer-ready-to-play", () => {
     console.log("Received sequencer-ready-to-play signal", {
         isPlaying: isPlaying.value,
-        intervalId: intervalId,
-        shouldStart: isPlaying.value && !intervalId,
+        animationFrameId: animationFrameId,
+        shouldStart: isPlaying.value && !animationFrameId,
     });
 
     // Only start playing if we're in the "waiting to play" state
-    if (isPlaying.value && !intervalId) {
+    if (isPlaying.value && !animationFrameId) {
         console.log("Scene ready - starting sequencer playback");
         play();
     } else {
-        console.log("Not starting playbook - conditions not met");
+        console.log("Not starting playback - conditions not met");
     }
 });
 
@@ -492,6 +525,10 @@ onUnmounted(() => {
     if (intervalId) {
         clearInterval(intervalId);
         intervalId = null;
+    }
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
     }
     // Clean up event listeners
     EventBus.off("sequencer-ready-to-play");
