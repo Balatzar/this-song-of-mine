@@ -11,6 +11,10 @@ import bridgeLogsUrl from "../../assets/Sprites/Tiles/Default/bridge_logs.png?ur
 import bridgeUrl from "../../assets/Sprites/Tiles/Default/bridge.png?url";
 import bricksBrownUrl from "../../assets/Sprites/Tiles/Default/bricks_brown.png?url";
 import snailWalkAUrl from "../../assets/Sprites/Enemies/Default/snail_walk_a.png?url";
+import drumCrawlAUrl from "../../assets/Sprites/Enemies/Default/drum_crawl_a.png?url";
+import drumCrawlBUrl from "../../assets/Sprites/Enemies/Default/drum_crawl_b.png?url";
+import drumRestUrl from "../../assets/Sprites/Enemies/Default/drum_rest.png?url";
+import drumHurteUrl from "../../assets/Sprites/Enemies/Default/drum_hurt.png?url";
 
 export class Preloader extends Scene {
     constructor() {
@@ -36,11 +40,23 @@ export class Preloader extends Scene {
 
         // Load enemy sprites
         this.load.image("snail_walk_a", snailWalkAUrl);
+        this.load.image("drum_crawl_a", drumCrawlAUrl);
+        this.load.image("drum_crawl_b", drumCrawlBUrl);
+        this.load.image("drum_rest", drumRestUrl);
+        this.load.image("drum_hurt", drumHurteUrl);
     }
 
     create() {
         //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
         //  For example, you can define global animations here, so we can use them in other scenes.
+
+        // Create drum crawling animation
+        this.anims.create({
+            key: "drum_crawl",
+            frames: [{ key: "drum_crawl_a" }, { key: "drum_crawl_b" }],
+            frameRate: 4, // Slow animation for crawling effect
+            repeat: -1, // Loop forever
+        });
 
         //  Move to the Game scene
         this.scene.start("Game");

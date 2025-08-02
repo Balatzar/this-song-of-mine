@@ -110,7 +110,7 @@ The integrated drum sequencer includes:
 -   **16-Step Sequencer**: Create complex rhythmic patterns
 -   **Real-time Audio**: Web Audio API synthesis for immediate feedback
 -   **Visual Feedback**: Color-coded tracks and step highlighting
--   **BPM Control**: Adjustable tempo to match your gameplay style
+-   **Fixed Tempo**: Runs at 80 BPM for consistent gameplay
 
 ## 🎯 Game Features
 
@@ -187,3 +187,4 @@ The built files will be in the `dist/` folder. Deploy all contents to your web s
 ## 📄 Credits
 
 Drum icons by Freepik
+

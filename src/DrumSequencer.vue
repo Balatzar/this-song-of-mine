@@ -22,7 +22,7 @@ const props = defineProps({
 // Drum Sequencer State
 const isPlaying = ref(false);
 const currentStep = ref(0);
-const bpm = ref(80);
+const bpm = 80;
 const steps = ref(16); // Default 4 measures × 4 beats = 16 steps
 
 // Loop limit system
@@ -234,7 +234,7 @@ const togglePlayStop = async () => {
         // Send sequence data to the game (this will trigger scene restart)
         EventBus.emit("sequencer-started", {
             tracks: tracks.value,
-            bpm: bpm.value,
+            bpm: bpm,
             steps: steps.value,
             maxLoops: maxLoops.value,
         });
@@ -268,7 +268,7 @@ const resetGame = () => {
 };
 
 const play = () => {
-    const stepTime = 60000 / (bpm.value * 4); // 16th notes in milliseconds
+    const stepTime = 60000 / (bpm * 4); // 16th notes in milliseconds
     console.log(tracks.value);
 
     // Initialize timing for frame-based sequencer
@@ -732,11 +732,6 @@ onUnmounted(() => {
                 🔄
             </button>
 
-            <div class="bpm-control">
-                <label>BPM:</label>
-                <span class="bpm-display">{{ bpm }}</span>
-            </div>
-
             <div
                 class="loop-counter"
                 :class="{
@@ -934,25 +929,6 @@ onUnmounted(() => {
 .control-btn.play-stop-btn.playing:hover {
     background: #da190b;
     transform: translateY(-1px);
-}
-
-.bpm-control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 8px 15px;
-    border-radius: 6px;
-}
-
-.bpm-control .bpm-display {
-    min-width: 40px;
-    font-weight: bold;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 4px 8px;
-    border-radius: 4px;
-    text-align: center;
 }
 
 .loop-counter {
@@ -1189,11 +1165,6 @@ onUnmounted(() => {
         display: none;
     }
 
-    /* Hide labels in BPM control on mobile */
-    .bpm-control label {
-        display: none;
-    }
-
     /* Hide labels in loop counter on mobile */
     .loop-counter label {
         display: none;
@@ -1207,7 +1178,6 @@ onUnmounted(() => {
         flex-shrink: 0;
     }
 
-    .bpm-control,
     .loop-counter {
         padding: 6px 10px;
         flex-shrink: 0;
