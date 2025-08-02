@@ -196,22 +196,22 @@ const initAudio = async () => {
     }
 };
 
-const togglePlay = async () => {
+const togglePlayStop = async () => {
     await initAudio();
 
     if (isPlaying.value) {
-        // Cancel animation frame instead of clearing interval
+        // Currently playing - stop
         if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
         }
         clearInterval(intervalId);
-        intervalId = null; // Reset intervalId to null
+        intervalId = null;
         isPlaying.value = false;
         // Stop the sequence in the game
         EventBus.emit("sequencer-stopped");
     } else {
-        // Reset loop tracking for new game
+        // Currently stopped - start playing
         currentLoop.value = 0;
         isGameOver.value = false;
 
@@ -667,13 +667,15 @@ onUnmounted(() => {
         <!-- Controls -->
         <div class="controls">
             <button
-                class="control-btn play-btn"
-                @click="togglePlay"
-                :class="{ active: isPlaying }"
+                class="control-btn play-stop-btn"
+                @click="togglePlayStop"
+                :class="{
+                    playing: isPlaying,
+                    stopped: !isPlaying,
+                }"
             >
-                {{ isPlaying ? "⏸️" : "▶️" }}
+                {{ isPlaying ? "⏹️" : "▶️" }}
             </button>
-            <button class="control-btn" @click="stop">⏹️</button>
             <button
                 class="control-btn"
                 @click="clearPattern"
@@ -884,6 +886,27 @@ onUnmounted(() => {
 .control-btn.disabled:hover {
     background: #666;
     transform: none;
+}
+
+/* Play/Stop button styling */
+.control-btn.play-stop-btn.stopped {
+    background: #4caf50; /* Green when ready to play */
+    color: white;
+}
+
+.control-btn.play-stop-btn.stopped:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.control-btn.play-stop-btn.playing {
+    background: #f44336; /* Red when ready to stop */
+    color: white;
+}
+
+.control-btn.play-stop-btn.playing:hover {
+    background: #da190b;
+    transform: translateY(-1px);
 }
 
 .bpm-control {
