@@ -214,12 +214,21 @@ const togglePlayStop = async () => {
         clearInterval(intervalId);
         intervalId = null;
         isPlaying.value = false;
+        // Reset to beginning for true stop behavior (not pause)
+        currentStep.value = 0;
+        // Reset loop timer variables
+        lastStepTime = 0;
+        nextStepTime = 0;
         // Stop the sequence in the game
         EventBus.emit("sequencer-stopped");
     } else {
-        // Currently stopped - start playing
+        // Currently stopped - start playing from beginning
+        currentStep.value = 0;
         currentLoop.value = 0;
         isGameOver.value = false;
+        // Reset loop timer variables to ensure clean start
+        lastStepTime = 0;
+        nextStepTime = 0;
 
         isPlaying.value = true;
         // Send sequence data to the game (this will trigger scene restart)
@@ -252,6 +261,9 @@ const resetGame = () => {
     stop();
     currentLoop.value = 0;
     isGameOver.value = false;
+    // Reset loop timer variables to ensure clean restart
+    lastStepTime = 0;
+    nextStepTime = 0;
     EventBus.emit("game-reset");
 };
 
