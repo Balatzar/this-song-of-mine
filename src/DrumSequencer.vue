@@ -2,6 +2,9 @@
 import { ref, onUnmounted, onMounted } from "vue";
 import { EventBus } from "./game/EventBus";
 
+// Environment detection
+const isDevelopment = import.meta.env.DEV;
+
 // Props
 const props = defineProps({
     title: {
@@ -561,6 +564,7 @@ onUnmounted(() => {
                 Clear
             </button>
             <button
+                v-if="isDevelopment"
                 class="control-btn debug-btn"
                 @click="createDebugPattern"
                 :disabled="isPlaying"
