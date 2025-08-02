@@ -1,9 +1,6 @@
 import { BaseLevel } from "./BaseLevel";
 import { Player } from "../objects/Player";
-import { Snail } from "../objects/Snail";
 import { ExitSign } from "../objects/ExitSign";
-import { OneWayPlatform } from "../objects/OneWayPlatform";
-import { Bridge } from "../objects/Bridge";
 
 /**
  * Level 1 - The original level layout
