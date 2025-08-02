@@ -126,9 +126,10 @@ export class Game extends Scene {
         // Create the level content
         this.currentLevel.create();
 
-        // Get level-specific instrument configuration
+        // Get level-specific configuration
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
         const measureCount = this.currentLevel.getMeasureCount();
+        const maxLoops = this.currentLevel.getMaxLoops();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -137,6 +138,7 @@ export class Game extends Scene {
             levelName: `Level ${levelIndex + 1}`,
             instrumentConfig: instrumentConfig,
             measureCount: measureCount,
+            maxLoops: maxLoops,
         });
 
         console.log(`Level ${levelIndex + 1} loaded successfully`);
@@ -156,6 +158,7 @@ export class Game extends Scene {
         // Get level-specific configuration for the event
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
         const measureCount = this.currentLevel.getMeasureCount();
+        const maxLoops = this.currentLevel.getMaxLoops();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -164,6 +167,7 @@ export class Game extends Scene {
             levelName: `Level ${this.currentLevelIndex + 1}`,
             instrumentConfig: instrumentConfig,
             measureCount: measureCount,
+            maxLoops: maxLoops,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
@@ -320,12 +324,14 @@ export class Game extends Scene {
         if (this.currentLevel) {
             const instrumentConfig = this.currentLevel.getInstrumentConfig();
             const measureCount = this.currentLevel.getMeasureCount();
+            const maxLoops = this.currentLevel.getMaxLoops();
             EventBus.emit("level-changed", {
                 levelIndex: this.currentLevelIndex,
                 levelNumber: this.currentLevelIndex + 1,
                 levelName: `Level ${this.currentLevelIndex + 1}`,
                 instrumentConfig: instrumentConfig,
                 measureCount: measureCount,
+                maxLoops: maxLoops,
             });
         }
     }

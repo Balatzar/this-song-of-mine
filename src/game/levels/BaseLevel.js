@@ -54,6 +54,14 @@ export class BaseLevel {
     }
 
     /**
+     * Get the maximum number of loops for this level
+     * @returns {number} Maximum number of loops (default: 2)
+     */
+    getMaxLoops() {
+        return 2; // Default 2 loops
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */

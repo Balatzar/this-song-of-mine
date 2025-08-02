@@ -34,6 +34,10 @@ export class Level1 extends BaseLevel {
         return 4; // Level 1 uses 4 measures
     }
 
+    getMaxLoops() {
+        return 2; // Level 1 uses 2 loops
+    }
+
     create() {
         console.log("Creating Level 1...");
 

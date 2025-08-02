@@ -20,7 +20,7 @@ const bpm = ref(80);
 const steps = ref(16); // Default 4 measures × 4 beats = 16 steps
 
 // Loop limit system
-const maxLoops = 2;
+const maxLoops = ref(2); // Default 2 loops
 const currentLoop = ref(0);
 const isGameOver = ref(false);
 
@@ -221,7 +221,7 @@ const togglePlay = async () => {
             tracks: tracks.value,
             bpm: bpm.value,
             steps: steps.value,
-            maxLoops: maxLoops,
+            maxLoops: maxLoops.value,
         });
         // Don't call play() immediately - wait for scene to be ready
         // The game scene will emit "sequencer-ready-to-play" when ready
@@ -279,7 +279,7 @@ const play = () => {
                     (track) => track.pattern[currentStep.value]
                 ),
                 currentLoop: currentLoop.value,
-                maxLoops: maxLoops,
+                maxLoops: maxLoops.value,
                 isGameOver: isGameOver.value,
             });
 
@@ -289,10 +289,12 @@ const play = () => {
             // Check if we completed a loop (going from last step back to 0)
             if (currentStep.value === steps.value - 1 && nextStep === 0) {
                 currentLoop.value++;
-                console.log(`Completed loop ${currentLoop.value}/${maxLoops}`);
+                console.log(
+                    `Completed loop ${currentLoop.value}/${maxLoops.value}`
+                );
 
                 // Check if we've reached the limit
-                if (currentLoop.value >= maxLoops) {
+                if (currentLoop.value >= maxLoops.value) {
                     isGameOver.value = true;
                     console.log("Time's up! Game over - resetting...");
 
@@ -514,6 +516,11 @@ const updateInstrumentConfig = (levelData) => {
             steps.value = levelData.measureCount * 4; // 4 beats per measure
         }
 
+        // Update max loops if provided
+        if (levelData.maxLoops) {
+            maxLoops.value = levelData.maxLoops;
+        }
+
         // Reset all patterns when switching levels with new step count
         tracks.value.forEach((track) => {
             track.pattern = new Array(steps.value).fill(false);
@@ -526,6 +533,10 @@ const updateInstrumentConfig = (levelData) => {
             "Hi-Hat": 0,
             "Open Hat": 0,
         };
+
+        // Reset loop counter when switching levels
+        currentLoop.value = 0;
+        isGameOver.value = false;
 
         // Update budget usage display
         updateBudgetUsage();

@@ -31,6 +31,10 @@ export class Level3 extends BaseLevel {
         return 4;
     }
 
+    getMaxLoops() {
+        return 3; // Level 3 uses 3 loops for more challenge
+    }
+
     create() {
         console.log("Creating Level 3...");
 

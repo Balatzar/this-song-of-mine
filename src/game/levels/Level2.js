@@ -33,6 +33,10 @@ export class Level2 extends BaseLevel {
         return 3;
     }
 
+    getMaxLoops() {
+        return 1; // Level 2 uses only 1 loop for quick completion
+    }
+
     create() {
         console.log("Creating Level 2...");
 
