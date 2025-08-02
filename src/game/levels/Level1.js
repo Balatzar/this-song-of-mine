@@ -30,6 +30,10 @@ export class Level1 extends BaseLevel {
         };
     }
 
+    getMeasureCount() {
+        return 4; // Level 1 uses 4 measures
+    }
+
     create() {
         console.log("Creating Level 1...");
 

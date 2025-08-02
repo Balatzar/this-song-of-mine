@@ -128,6 +128,7 @@ export class Game extends Scene {
 
         // Get level-specific instrument configuration
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
+        const measureCount = this.currentLevel.getMeasureCount();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -135,6 +136,7 @@ export class Game extends Scene {
             levelNumber: levelIndex + 1,
             levelName: `Level ${levelIndex + 1}`,
             instrumentConfig: instrumentConfig,
+            measureCount: measureCount,
         });
 
         console.log(`Level ${levelIndex + 1} loaded successfully`);
@@ -151,11 +153,17 @@ export class Game extends Scene {
         // Reset game state when switching levels
         this.onGameReset();
 
+        // Get level-specific configuration for the event
+        const instrumentConfig = this.currentLevel.getInstrumentConfig();
+        const measureCount = this.currentLevel.getMeasureCount();
+
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
             levelIndex: this.currentLevelIndex,
             levelNumber: this.currentLevelIndex + 1,
             levelName: `Level ${this.currentLevelIndex + 1}`,
+            instrumentConfig: instrumentConfig,
+            measureCount: measureCount,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
@@ -311,11 +319,13 @@ export class Game extends Scene {
         // Send current level info when requested
         if (this.currentLevel) {
             const instrumentConfig = this.currentLevel.getInstrumentConfig();
+            const measureCount = this.currentLevel.getMeasureCount();
             EventBus.emit("level-changed", {
                 levelIndex: this.currentLevelIndex,
                 levelNumber: this.currentLevelIndex + 1,
                 levelName: `Level ${this.currentLevelIndex + 1}`,
                 instrumentConfig: instrumentConfig,
+                measureCount: measureCount,
             });
         }
     }

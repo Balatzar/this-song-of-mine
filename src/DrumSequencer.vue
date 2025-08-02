@@ -17,7 +17,7 @@ const props = defineProps({
 const isPlaying = ref(false);
 const currentStep = ref(0);
 const bpm = ref(80);
-const steps = 16;
+const steps = ref(16); // Default 4 measures × 4 beats = 16 steps
 
 // Loop limit system
 const maxLoops = 2;
@@ -66,28 +66,28 @@ const tracks = ref([
         name: "Kick",
         ability: "Jump",
         icon: "src/assets/Icons/kick.png",
-        pattern: new Array(steps).fill(false),
+        pattern: new Array(steps.value).fill(false),
         color: "#ff4444",
     },
     {
         name: "Snare",
         ability: "Dash after jump",
         icon: "src/assets/Icons/snare.png",
-        pattern: new Array(steps).fill(false),
+        pattern: new Array(steps.value).fill(false),
         color: "#44ff44",
     },
     {
         name: "Hi-Hat",
         ability: "Go Right",
         icon: "src/assets/Icons/hi-hat.png",
-        pattern: new Array(steps).fill(false),
+        pattern: new Array(steps.value).fill(false),
         color: "#4444ff",
     },
     {
         name: "Open Hat",
         ability: "Go Left",
         icon: "src/assets/Icons/hi-hat-open.png",
-        pattern: new Array(steps).fill(false),
+        pattern: new Array(steps.value).fill(false),
         color: "#ffff44",
     },
 ]);
@@ -220,7 +220,7 @@ const togglePlay = async () => {
         EventBus.emit("sequencer-started", {
             tracks: tracks.value,
             bpm: bpm.value,
-            steps: steps,
+            steps: steps.value,
             maxLoops: maxLoops,
         });
         // Don't call play() immediately - wait for scene to be ready
@@ -284,10 +284,10 @@ const play = () => {
             });
 
             // Move to next step
-            const nextStep = (currentStep.value + 1) % steps;
+            const nextStep = (currentStep.value + 1) % steps.value;
 
-            // Check if we completed a loop (going from step 15 back to 0)
-            if (currentStep.value === steps - 1 && nextStep === 0) {
+            // Check if we completed a loop (going from last step back to 0)
+            if (currentStep.value === steps.value - 1 && nextStep === 0) {
                 currentLoop.value++;
                 console.log(`Completed loop ${currentLoop.value}/${maxLoops}`);
 
@@ -509,9 +509,14 @@ const updateInstrumentConfig = (levelData) => {
         budgetConfig.value = { ...levelData.instrumentConfig.budgetConfig };
         currentLevelIndex.value = levelData.levelIndex;
 
-        // Reset all patterns when switching levels
+        // Update steps based on measure count if provided
+        if (levelData.measureCount) {
+            steps.value = levelData.measureCount * 4; // 4 beats per measure
+        }
+
+        // Reset all patterns when switching levels with new step count
         tracks.value.forEach((track) => {
-            track.pattern = new Array(steps).fill(false);
+            track.pattern = new Array(steps.value).fill(false);
         });
 
         // Reset budget usage

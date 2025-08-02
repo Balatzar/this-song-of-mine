@@ -45,6 +45,15 @@ export class BaseLevel {
     }
 
     /**
+     * Get the number of measures for this level
+     * Each measure contains 4 beats, so total steps = measures * 4
+     * @returns {number} Number of measures (default: 4)
+     */
+    getMeasureCount() {
+        return 4; // Default 4 measures (16 steps)
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */
