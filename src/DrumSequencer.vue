@@ -2,6 +2,12 @@
 import { ref, onUnmounted, onMounted, computed } from "vue";
 import { EventBus } from "./game/EventBus";
 
+// Import instrument icons
+import kickIconUrl from "./assets/Icons/kick.png?url";
+import snareIconUrl from "./assets/Icons/snare.png?url";
+import hiHatIconUrl from "./assets/Icons/hi-hat.png?url";
+import hiHatOpenIconUrl from "./assets/Icons/hi-hat-open.png?url";
+
 // Environment detection
 const isDevelopment = import.meta.env.DEV;
 
@@ -65,28 +71,28 @@ const tracks = ref([
     {
         name: "Kick",
         ability: "Jump",
-        icon: "src/assets/Icons/kick.png",
+        icon: kickIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#ff4444",
     },
     {
         name: "Snare",
         ability: "Dash after jump",
-        icon: "src/assets/Icons/snare.png",
+        icon: snareIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#44ff44",
     },
     {
         name: "Hi-Hat",
         ability: "Go Right",
-        icon: "src/assets/Icons/hi-hat.png",
+        icon: hiHatIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#4444ff",
     },
     {
         name: "Open Hat",
         ability: "Go Left",
-        icon: "src/assets/Icons/hi-hat-open.png",
+        icon: hiHatOpenIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#ffff44",
     },
