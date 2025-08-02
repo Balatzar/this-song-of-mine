@@ -145,7 +145,14 @@ export class Player {
         // Set up camera to follow the player
         this.scene.cameras.main.startFollow(this.sprite);
         this.scene.cameras.main.setLerp(0.05, 0.05); // Smooth camera following
-        this.scene.cameras.main.setZoom(1); // Adjust zoom if needed
+
+        // Detect phone mode: when canvas is higher than it is wide
+        const gameWidth = this.scene.sys.game.config.width;
+        const isPhoneMode = gameWidth < 768;
+
+        // Set zoom level based on device orientation
+        const zoomLevel = isPhoneMode ? 0.5 : 1;
+        this.scene.cameras.main.setZoom(zoomLevel);
 
         const worldWidth = this.scene.physics.world.bounds.width;
         const worldHeight = this.scene.physics.world.bounds.height;
