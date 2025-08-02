@@ -100,11 +100,11 @@ export class Game extends Scene {
 
         new ExitSign(this, 30, 1, 0, 0, this.player);
 
-        this.createBlockAt(6, 2, "dirt_block", -30, -20);
-        this.createBlockAt(11, 1, "dirt_block", -20, -20);
-        this.createBlockAt(11, 2, "dirt_block", -20, -20);
-        this.createBlockAt(12, 2, "dirt_block", -20, -20);
-        this.createBlockAt(12, 3, "dirt_block", -20, -20);
+        this.createBlockAt(6, 2, "bricks_brown", -30, -20);
+        this.createBlockAt(11, 1, "bricks_brown", -20, -20);
+        this.createBlockAt(11, 2, "bricks_brown", -20, -20);
+        this.createBlockAt(12, 2, "bricks_brown", -20, -20);
+        this.createBlockAt(12, 3, "bricks_brown", -20, -20);
 
         new OneWayPlatform(this, 7, 2, -20, 10, this.player);
 

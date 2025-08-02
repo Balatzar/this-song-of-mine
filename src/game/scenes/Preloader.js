@@ -9,6 +9,7 @@ import dirtBlockUrl from "../../assets/Sprites/Tiles/Default/terrain_grass_block
 import signExitUrl from "../../assets/Sprites/Tiles/Default/sign_exit.png?url";
 import bridgeLogsUrl from "../../assets/Sprites/Tiles/Default/bridge_logs.png?url";
 import bridgeUrl from "../../assets/Sprites/Tiles/Default/bridge.png?url";
+import bricksBrownUrl from "../../assets/Sprites/Tiles/Default/bricks_brown.png?url";
 import snailWalkAUrl from "../../assets/Sprites/Enemies/Default/snail_walk_a.png?url";
 
 export class Preloader extends Scene {
@@ -40,6 +41,7 @@ export class Preloader extends Scene {
 
         // Load terrain sprites
         this.load.image("dirt_block", dirtBlockUrl);
+        this.load.image("bricks_brown", bricksBrownUrl);
         this.load.image("sign_exit", signExitUrl);
         this.load.image("bridge_logs", bridgeLogsUrl);
         this.load.image("bridge", bridgeUrl);
