@@ -154,7 +154,7 @@ export class Player {
     setupCamera() {
         // Set up camera to follow the player
         this.scene.cameras.main.startFollow(this.sprite);
-        this.scene.cameras.main.setLerp(0.05, 0.05); // Smooth camera following
+        this.scene.cameras.main.setLerp(0.15, 0.15); // Faster camera following
 
         // Detect phone mode: when canvas is higher than it is wide
         const gameWidth = this.scene.sys.game.config.width;
@@ -162,7 +162,7 @@ export class Player {
         const isTabletMode = gameWidth >= 768 && gameWidth < 1024;
 
         // Set zoom level based on device orientation
-        const zoomLevel = isPhoneMode ? 0.5 : isTabletMode ? 0.7 : 1.2;
+        const zoomLevel = isPhoneMode ? 0.5 : isTabletMode ? 0.7 : 1;
         this.scene.cameras.main.setZoom(zoomLevel);
 
         const worldWidth = this.scene.physics.world.bounds.width;

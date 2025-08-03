@@ -32,7 +32,7 @@ export class Game extends Scene {
             Level9,
             Level10,
         ];
-        this.currentLevelIndex = 7;
+        this.currentLevelIndex = 0;
 
         // Sequencer state management
         this.isSequencerMode = false;
