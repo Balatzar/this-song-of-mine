@@ -32,7 +32,7 @@ const toggleCollisions = () => {
 
 const loadLevel = () => {
     if (scene.value) {
-        EventBus.emit("load-specific-level", selectedLevel.value);
+        EventBus.emit("load-specific-level", parseInt(selectedLevel.value));
     }
 };
 
