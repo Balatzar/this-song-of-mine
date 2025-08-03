@@ -79,7 +79,12 @@ export class Game extends Scene {
         const worldH = this.physics.world.bounds.height;
         const x = blockX * bs + bs / 2;
         const y = worldH - (blockY + 1) * bs + bs / 2;
-        return this.add.image(x, y, texture);
+        const tile = this.add.image(x, y, texture);
+
+        // Add to visual tiles group for cleanup
+        this.visualTiles.add(tile);
+
+        return tile;
     }
 
     // Build a wall/rectangle from (fromBlockX, fromBlockY) to (toBlockX, toBlockY), inclusive.
@@ -159,6 +164,9 @@ export class Game extends Scene {
         // Create platforms group
         this.platforms = this.physics.add.staticGroup();
 
+        // Create visual tiles group for cleanup
+        this.visualTiles = this.add.group();
+
         // Initialize level system
         this.loadLevel(this.currentLevelIndex);
 
@@ -199,6 +207,9 @@ export class Game extends Scene {
 
         // Clear platforms group
         this.platforms.clear(true, true);
+
+        // Clear visual tiles group
+        this.visualTiles.clear(true, true);
 
         // Create new level instance
         const LevelClass = this.availableLevels[levelIndex];
@@ -594,6 +605,11 @@ export class Game extends Scene {
         if (this.currentLevel) {
             this.currentLevel.destroy();
             this.currentLevel = null;
+        }
+
+        // Clean up visual tiles
+        if (this.visualTiles) {
+            this.visualTiles.clear(true, true);
         }
 
         EventBus.off("sequencer-started", this.onSequencerStarted, this);
