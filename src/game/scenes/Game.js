@@ -8,6 +8,7 @@ import { Level4 } from "../levels/Level4";
 import { Level5 } from "../levels/Level5";
 import { Level6 } from "../levels/Level6";
 import { Level7 } from "../levels/Level7";
+import { Level8 } from "../levels/Level8";
 
 export class Game extends Scene {
     constructor() {
@@ -25,8 +26,9 @@ export class Game extends Scene {
             Level5,
             Level6,
             Level7,
+            Level8,
         ];
-        this.currentLevelIndex = 0;
+        this.currentLevelIndex = 7;
 
         // Sequencer state management
         this.isSequencerMode = false;
@@ -223,6 +225,7 @@ export class Game extends Scene {
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
         const debugPattern = this.currentLevel.getDebugPattern();
+        const blockedBeats = this.currentLevel.getBlockedBeats();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -233,6 +236,7 @@ export class Game extends Scene {
             measureCount: measureCount,
             maxLoops: maxLoops,
             debugPattern: debugPattern,
+            blockedBeats: blockedBeats,
         });
 
         console.log(`Level ${levelIndex + 1} loaded successfully`);
@@ -254,6 +258,7 @@ export class Game extends Scene {
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
         const debugPattern = this.currentLevel.getDebugPattern();
+        const blockedBeats = this.currentLevel.getBlockedBeats();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -264,6 +269,7 @@ export class Game extends Scene {
             measureCount: measureCount,
             maxLoops: maxLoops,
             debugPattern: debugPattern,
+            blockedBeats: blockedBeats,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
@@ -561,6 +567,7 @@ export class Game extends Scene {
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
         const debugPattern = this.currentLevel.getDebugPattern();
+        const blockedBeats = this.currentLevel.getBlockedBeats();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -571,6 +578,7 @@ export class Game extends Scene {
             measureCount: measureCount,
             maxLoops: maxLoops,
             debugPattern: debugPattern,
+            blockedBeats: blockedBeats,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);

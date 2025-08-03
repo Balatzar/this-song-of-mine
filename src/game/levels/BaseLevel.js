@@ -71,6 +71,16 @@ export class BaseLevel {
     }
 
     /**
+     * Get the blocked beats configuration for this level
+     * Returns an object with instrument names as keys and arrays of blocked beat indices as values
+     * Beat indices are 0-based (0 = first beat, 1 = second beat, etc.)
+     * @returns {Object} Blocked beats configuration
+     */
+    getBlockedBeats() {
+        return {};
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */

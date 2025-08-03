@@ -80,6 +80,9 @@ const budgetUsage = ref({
 // Current level's debug pattern
 const currentDebugPattern = ref({});
 
+// Current level's blocked beats configuration
+const currentBlockedBeats = ref({});
+
 // Drum tracks
 const tracks = ref([
     {
@@ -91,7 +94,7 @@ const tracks = ref([
     },
     {
         name: "Snare",
-        ability: "Dash after jump",
+        ability: "Dash",
         icon: snareIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#44ff44",
@@ -384,6 +387,15 @@ const canAddBeat = (trackName) => {
     return currentUsage < config.max;
 };
 
+// Check if a specific beat is blocked for an instrument
+const isBeatBlocked = (instrumentName, stepIndex) => {
+    const blockedBeats = currentBlockedBeats.value[instrumentName];
+    if (!blockedBeats || !Array.isArray(blockedBeats)) {
+        return false; // No blocked beats defined for this instrument
+    }
+    return blockedBeats.includes(stepIndex);
+};
+
 const isBudgetExceeded = (trackName) => {
     if (!budgetConfig.value) return false; // No config available yet
     const config = budgetConfig.value[trackName];
@@ -565,6 +577,11 @@ const toggleStep = (trackIndex, stepIndex) => {
     const track = tracks.value[trackIndex];
     const currentState = track.pattern[stepIndex];
 
+    // Check if this beat is blocked for this instrument
+    if (isBeatBlocked(track.name, stepIndex)) {
+        return; // Beat is blocked, don't allow any modification
+    }
+
     // If trying to activate a step, check budget
     if (!currentState && !canAddBeat(track.name)) {
         return; // Budget exceeded, don't toggle
@@ -622,6 +639,11 @@ const stopDrawing = (trackIndex, stepIndex) => {
 const applyDrawing = (trackIndex, stepIndex) => {
     const track = tracks.value[trackIndex];
 
+    // Check if this beat is blocked for this instrument
+    if (isBeatBlocked(track.name, stepIndex)) {
+        return; // Beat is blocked, don't allow any modification
+    }
+
     if (drawingMode.value === "activate") {
         // Check budget before activating
         if (canAddBeat(track.name)) {
@@ -639,7 +661,12 @@ const clearPattern = () => {
     if (isPlaying.value) return;
 
     tracks.value.forEach((track) => {
-        track.pattern.fill(false);
+        // Only clear non-blocked beats
+        track.pattern.forEach((step, stepIndex) => {
+            if (!isBeatBlocked(track.name, stepIndex)) {
+                track.pattern[stepIndex] = false;
+            }
+        });
     });
     updateBudgetUsage();
 };
@@ -702,6 +729,13 @@ const updateInstrumentConfig = (levelData) => {
         // Store the level's debug pattern
         if (levelData.debugPattern) {
             currentDebugPattern.value = { ...levelData.debugPattern };
+        }
+
+        // Store the level's blocked beats configuration
+        if (levelData.blockedBeats) {
+            currentBlockedBeats.value = { ...levelData.blockedBeats };
+        } else {
+            currentBlockedBeats.value = {};
         }
 
         // Reset all patterns when switching levels - clean slate for each level
@@ -983,6 +1017,7 @@ onUnmounted(() => {
                             current: currentStep === stepIndex && isPlaying,
                             drawing: isDrawing,
                             disabled: isPlaying,
+                            blocked: isBeatBlocked(track.name, stepIndex),
                         }"
                         :style="{
                             backgroundColor: step ? track.color : '',
@@ -1319,6 +1354,32 @@ onUnmounted(() => {
 .step-btn.disabled:hover {
     border-color: #555;
     transform: none;
+}
+
+.step-btn.blocked {
+    background: #2c1810 !important; /* Dark reddish brown for blocked beats */
+    border-color: #8b4513 !important; /* Saddle brown border */
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+    position: relative;
+}
+
+.step-btn.blocked::before {
+    content: "×";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #cd853f;
+    font-size: 16px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.step-btn.blocked:hover {
+    border-color: #8b4513 !important;
+    transform: none !important;
+    background: #2c1810 !important;
 }
 
 @keyframes pulse {
