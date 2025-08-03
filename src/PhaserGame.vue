@@ -95,6 +95,7 @@ defineExpose({ scene, game });
                     <option value="5">Level 6</option>
                     <option value="6">Level 7</option>
                     <option value="7">Level 8</option>
+                    <option value="8">Level 9</option>
                 </select>
             </div>
         </div>

@@ -56,7 +56,7 @@ export class Level2 extends BaseLevel {
         this.createBlockAt(17, 1, "bricks_brown", 0, 0);
 
         // Create exit sign
-        const exitSign = new ExitSign(this.scene, 20, 1, 0, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 20, 1, -30, 0, this.player);
         this.addLevelObject(exitSign);
 
         console.log("Level 2 created successfully");

@@ -7,6 +7,7 @@ import kickIconUrl from "./assets/Icons/kick.png?url";
 import snareIconUrl from "./assets/Icons/snare.png?url";
 import hiHatIconUrl from "./assets/Icons/hi-hat.png?url";
 import hiHatOpenIconUrl from "./assets/Icons/hi-hat-open.png?url";
+import clapIconUrl from "./assets/Icons/clap.png?url";
 import crashIconUrl from "./assets/Icons/cymbals.png?url";
 
 // Import drum sounds
@@ -46,12 +47,12 @@ const initialStep = ref({ trackIndex: null, stepIndex: null }); // Track initial
 
 // Level-specific instrument configuration
 const currentLevelConfig = ref({
-    availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat", "Crash"],
+    availableInstruments: ["Kick", "Snare", "Hi-Hat", "Clap", "Crash"],
     budgetConfig: {
         Kick: { max: 4, unlimited: false },
         Snare: { max: 2, unlimited: false },
         "Hi-Hat": { max: 0, unlimited: true },
-        "Open Hat": { max: 0, unlimited: true },
+        Clap: { max: 0, unlimited: true },
         Crash: { max: 0, unlimited: true },
     },
 });
@@ -64,7 +65,7 @@ const budgetConfig = ref({
     Kick: { max: 4, unlimited: false },
     Snare: { max: 2, unlimited: false },
     "Hi-Hat": { max: 0, unlimited: true },
-    "Open Hat": { max: 0, unlimited: true },
+    Clap: { max: 0, unlimited: true },
     Crash: { max: 0, unlimited: true },
 });
 
@@ -73,7 +74,7 @@ const budgetUsage = ref({
     Kick: 0,
     Snare: 0,
     "Hi-Hat": 0,
-    "Open Hat": 0,
+    Clap: 0,
     Crash: 0,
 });
 
@@ -82,6 +83,7 @@ const currentDebugPattern = ref({});
 
 // Current level's blocked beats configuration
 const currentBlockedBeats = ref({});
+const currentForcedBeats = ref({});
 
 // Drum tracks
 const tracks = ref([
@@ -107,9 +109,9 @@ const tracks = ref([
         color: "#4444ff",
     },
     {
-        name: "Open Hat",
+        name: "Clap",
         ability: "Go Left",
-        icon: hiHatOpenIconUrl,
+        icon: clapIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#ffff44",
     },
@@ -143,7 +145,7 @@ const loadAudioFiles = async () => {
         Kick: kickSoundUrl,
         Snare: snareSoundUrl,
         "Hi-Hat": hiHatSoundUrl,
-        "Open Hat": clapSoundUrl, // Using clap sound for Open Hat
+        Clap: clapSoundUrl, // Using clap sound for Clap
         Crash: crashSoundUrl,
     };
 
@@ -274,7 +276,7 @@ const createDrumSound = (type) => {
                 case "Hi-Hat":
                     audio.volume = 0.5;
                     break;
-                case "Open Hat":
+                case "Clap":
                     audio.volume = 0.6;
                     break;
                 case "Crash":
@@ -340,7 +342,7 @@ const createDrumSound = (type) => {
                 case "Hi-Hat":
                     volume = 0.5;
                     break;
-                case "Open Hat":
+                case "Clap":
                     volume = 0.6;
                     break;
                 case "Crash":
@@ -394,6 +396,15 @@ const isBeatBlocked = (instrumentName, stepIndex) => {
         return false; // No blocked beats defined for this instrument
     }
     return blockedBeats.includes(stepIndex);
+};
+
+// Check if a specific beat is forced for an instrument
+const isBeatForced = (instrumentName, stepIndex) => {
+    const forcedBeats = currentForcedBeats.value[instrumentName];
+    if (!forcedBeats || !Array.isArray(forcedBeats)) {
+        return false; // No forced beats defined for this instrument
+    }
+    return forcedBeats.includes(stepIndex);
 };
 
 const isBudgetExceeded = (trackName) => {
@@ -582,6 +593,11 @@ const toggleStep = (trackIndex, stepIndex) => {
         return; // Beat is blocked, don't allow any modification
     }
 
+    // Check if this beat is forced for this instrument
+    if (isBeatForced(track.name, stepIndex) && currentState) {
+        return; // Beat is forced and active, don't allow deactivation
+    }
+
     // If trying to activate a step, check budget
     if (!currentState && !canAddBeat(track.name)) {
         return; // Budget exceeded, don't toggle
@@ -651,6 +667,10 @@ const applyDrawing = (trackIndex, stepIndex) => {
             updateBudgetUsage();
         }
     } else if (drawingMode.value === "deactivate") {
+        // Check if this beat is forced for this instrument
+        if (isBeatForced(track.name, stepIndex)) {
+            return; // Beat is forced, don't allow deactivation
+        }
         track.pattern[stepIndex] = false;
         updateBudgetUsage();
     }
@@ -661,9 +681,12 @@ const clearPattern = () => {
     if (isPlaying.value) return;
 
     tracks.value.forEach((track) => {
-        // Only clear non-blocked beats
+        // Only clear non-blocked and non-forced beats
         track.pattern.forEach((step, stepIndex) => {
-            if (!isBeatBlocked(track.name, stepIndex)) {
+            if (
+                !isBeatBlocked(track.name, stepIndex) &&
+                !isBeatForced(track.name, stepIndex)
+            ) {
                 track.pattern[stepIndex] = false;
             }
         });
@@ -699,6 +722,16 @@ const createDebugPattern = () => {
             }
 
             track.pattern = adjustedPattern;
+
+            // Re-apply forced beats after setting debug pattern
+            const forcedBeats = currentForcedBeats.value[track.name];
+            if (forcedBeats && Array.isArray(forcedBeats)) {
+                forcedBeats.forEach((stepIndex) => {
+                    if (stepIndex >= 0 && stepIndex < track.pattern.length) {
+                        track.pattern[stepIndex] = true;
+                    }
+                });
+            }
         }
     });
     updateBudgetUsage();
@@ -738,9 +771,28 @@ const updateInstrumentConfig = (levelData) => {
             currentBlockedBeats.value = {};
         }
 
+        // Store the level's forced beats configuration
+        if (levelData.forcedBeats) {
+            currentForcedBeats.value = { ...levelData.forcedBeats };
+        } else {
+            currentForcedBeats.value = {};
+        }
+
         // Reset all patterns when switching levels - clean slate for each level
         tracks.value.forEach((track) => {
             track.pattern = new Array(steps.value).fill(false);
+        });
+
+        // Apply forced beats to the pattern
+        tracks.value.forEach((track) => {
+            const forcedBeats = currentForcedBeats.value[track.name];
+            if (forcedBeats && Array.isArray(forcedBeats)) {
+                forcedBeats.forEach((stepIndex) => {
+                    if (stepIndex >= 0 && stepIndex < track.pattern.length) {
+                        track.pattern[stepIndex] = true;
+                    }
+                });
+            }
         });
 
         // Reset budget usage
@@ -748,7 +800,7 @@ const updateInstrumentConfig = (levelData) => {
             Kick: 0,
             Snare: 0,
             "Hi-Hat": 0,
-            "Open Hat": 0,
+            Clap: 0,
             Crash: 0,
         };
 
@@ -1018,6 +1070,7 @@ onUnmounted(() => {
                             drawing: isDrawing,
                             disabled: isPlaying,
                             blocked: isBeatBlocked(track.name, stepIndex),
+                            forced: isBeatForced(track.name, stepIndex),
                         }"
                         :style="{
                             backgroundColor: step ? track.color : '',
@@ -1380,6 +1433,32 @@ onUnmounted(() => {
     border-color: #8b4513 !important;
     transform: none !important;
     background: #2c1810 !important;
+}
+
+.step-btn.forced {
+    background: #1a2c18 !important; /* Dark greenish for forced beats */
+    border-color: #4a7c59 !important; /* Green border */
+    cursor: not-allowed !important;
+    opacity: 0.9 !important;
+    position: relative;
+}
+
+.step-btn.forced::before {
+    content: "★";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #90ee90;
+    font-size: 14px;
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.step-btn.forced:hover {
+    border-color: #4a7c59 !important;
+    transform: none !important;
+    background: #1a2c18 !important;
 }
 
 @keyframes pulse {

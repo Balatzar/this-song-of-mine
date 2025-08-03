@@ -81,6 +81,17 @@ export class BaseLevel {
     }
 
     /**
+     * Get the forced beats configuration for this level
+     * Returns an object with instrument names as keys and arrays of forced beat indices as values
+     * Beat indices are 0-based (0 = first beat, 1 = second beat, etc.)
+     * These beats will always be present in the sequencer for this level
+     * @returns {Object} Forced beats configuration
+     */
+    getForcedBeats() {
+        return {};
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */
