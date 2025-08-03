@@ -9,6 +9,13 @@ import hiHatIconUrl from "./assets/Icons/hi-hat.png?url";
 import hiHatOpenIconUrl from "./assets/Icons/hi-hat-open.png?url";
 import crashIconUrl from "./assets/Icons/cymbals.png?url";
 
+// Import drum sounds
+import kickSoundUrl from "./assets/Sounds/Sequencer/808 Kick.wav?url";
+import snareSoundUrl from "./assets/Sounds/Sequencer/808 Snare.wav?url";
+import hiHatSoundUrl from "./assets/Sounds/Sequencer/808 HiHat.wav?url";
+import clapSoundUrl from "./assets/Sounds/Sequencer/808 Clap.wav?url";
+import crashSoundUrl from "./assets/Sounds/Sequencer/808 Crash.mp3?url";
+
 // Environment detection
 const isDevelopment = import.meta.env.DEV;
 
@@ -121,57 +128,238 @@ let animationFrameId = null;
 let lastStepTime = 0;
 let nextStepTime = 0;
 
-// Simple drum sounds using oscillators
-const createDrumSound = (type) => {
-    if (!audioContext) return;
+// Audio buffers for drum sounds
+const audioBuffers = ref({});
+const audioElements = ref({}); // Fallback HTML5 Audio elements
+const isAudioLoaded = ref(false);
+const useAudioElements = ref(false); // Flag to use HTML5 Audio fallback
 
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+// Load audio files with fallback to HTML5 Audio
+const loadAudioFiles = async () => {
+    const soundFiles = {
+        Kick: kickSoundUrl,
+        Snare: snareSoundUrl,
+        "Hi-Hat": hiHatSoundUrl,
+        "Open Hat": clapSoundUrl, // Using clap sound for Open Hat
+        Crash: crashSoundUrl,
+    };
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    console.log("Loading drum sounds:", soundFiles);
 
-    switch (type) {
-        case "Kick":
-            oscillator.frequency.setValueAtTime(60, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(
-                0.1,
-                audioContext.currentTime + 0.5
+    // First try Web Audio API
+    if (audioContext) {
+        try {
+            const loadPromises = Object.entries(soundFiles).map(
+                async ([name, url]) => {
+                    console.log(
+                        `Loading ${name} from ${url} via Web Audio API`
+                    );
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(
+                                `Failed to fetch ${name}: ${response.status} ${response.statusText}`
+                            );
+                        }
+                        const arrayBuffer = await response.arrayBuffer();
+                        console.log(
+                            `${name} file loaded, size: ${arrayBuffer.byteLength} bytes`
+                        );
+
+                        const audioBuffer = await audioContext.decodeAudioData(
+                            arrayBuffer
+                        );
+                        console.log(
+                            `${name} decoded successfully via Web Audio API, duration: ${audioBuffer.duration.toFixed(
+                                2
+                            )}s`
+                        );
+                        return { name, audioBuffer };
+                    } catch (error) {
+                        console.error(
+                            `Error loading ${name} via Web Audio API:`,
+                            error
+                        );
+                        throw error;
+                    }
+                }
             );
-            gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
-                0.01,
-                audioContext.currentTime + 0.5
+
+            const results = await Promise.all(loadPromises);
+
+            results.forEach(({ name, audioBuffer }) => {
+                audioBuffers.value[name] = audioBuffer;
+            });
+
+            isAudioLoaded.value = true;
+            useAudioElements.value = false;
+            console.log(
+                "All drum sounds loaded successfully via Web Audio API:",
+                Object.keys(audioBuffers.value)
             );
-            break;
-        case "Snare":
-            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
-                0.01,
-                audioContext.currentTime + 0.2
+            return;
+        } catch (error) {
+            console.warn(
+                "Web Audio API failed, falling back to HTML5 Audio:",
+                error
             );
-            break;
-        case "Hi-Hat":
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
-                0.01,
-                audioContext.currentTime + 0.1
-            );
-            break;
-        case "Open Hat":
-            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(
-                0.01,
-                audioContext.currentTime + 0.3
-            );
-            break;
+        }
     }
 
-    oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.5);
+    // Fallback to HTML5 Audio elements
+    console.log("Using HTML5 Audio fallback");
+    try {
+        Object.entries(soundFiles).forEach(([name, url]) => {
+            console.log(`Creating HTML5 Audio element for ${name}`);
+            const audio = new Audio(url);
+            audio.preload = "auto";
+            audio.volume = 0.7; // Set default volume
+
+            // Handle loading events
+            audio.addEventListener("canplaythrough", () => {
+                console.log(`${name} loaded via HTML5 Audio`);
+            });
+
+            audio.addEventListener("error", (e) => {
+                console.error(`Error loading ${name} via HTML5 Audio:`, e);
+            });
+
+            audioElements.value[name] = audio;
+        });
+
+        isAudioLoaded.value = true;
+        useAudioElements.value = true;
+        console.log(
+            "All drum sounds set up via HTML5 Audio:",
+            Object.keys(audioElements.value)
+        );
+    } catch (error) {
+        console.error("Both Web Audio API and HTML5 Audio failed:", error);
+        isAudioLoaded.value = false;
+    }
+};
+
+// Play drum sound using appropriate method
+const createDrumSound = (type) => {
+    console.log(`Attempting to play ${type} sound...`);
+
+    if (!isAudioLoaded.value) {
+        console.warn(`Audio not loaded yet for ${type}`);
+        return;
+    }
+
+    if (useAudioElements.value) {
+        // Use HTML5 Audio fallback
+        const audio = audioElements.value[type];
+        if (!audio) {
+            console.warn(
+                `No HTML5 audio element found for ${type}. Available elements:`,
+                Object.keys(audioElements.value)
+            );
+            return;
+        }
+
+        try {
+            // Set volume levels for different instruments
+            switch (type) {
+                case "Kick":
+                    audio.volume = 0.8;
+                    break;
+                case "Snare":
+                    audio.volume = 0.7;
+                    break;
+                case "Hi-Hat":
+                    audio.volume = 0.5;
+                    break;
+                case "Open Hat":
+                    audio.volume = 0.6;
+                    break;
+                case "Crash":
+                    audio.volume = 0.7;
+                    break;
+                default:
+                    audio.volume = 0.6;
+            }
+
+            // Reset and play the audio
+            audio.currentTime = 0;
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log(
+                            `Playing ${type} via HTML5 Audio at volume ${audio.volume}`
+                        );
+                    })
+                    .catch((error) => {
+                        console.error(
+                            `Error playing ${type} via HTML5 Audio:`,
+                            error
+                        );
+                    });
+            }
+        } catch (error) {
+            console.error(`Error playing ${type} via HTML5 Audio:`, error);
+        }
+    } else {
+        // Use Web Audio API
+        if (!audioContext) {
+            console.warn(`No audioContext available for ${type}`);
+            return;
+        }
+
+        if (!audioBuffers.value[type]) {
+            console.warn(
+                `No audio buffer found for ${type}. Available buffers:`,
+                Object.keys(audioBuffers.value)
+            );
+            return;
+        }
+
+        try {
+            const source = audioContext.createBufferSource();
+            const gainNode = audioContext.createGain();
+
+            source.buffer = audioBuffers.value[type];
+            source.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            // Set volume levels for different instruments
+            let volume = 0.6; // default
+            switch (type) {
+                case "Kick":
+                    volume = 0.8;
+                    break;
+                case "Snare":
+                    volume = 0.7;
+                    break;
+                case "Hi-Hat":
+                    volume = 0.5;
+                    break;
+                case "Open Hat":
+                    volume = 0.6;
+                    break;
+                case "Crash":
+                    volume = 0.7;
+                    break;
+            }
+
+            gainNode.gain.setValueAtTime(volume, audioContext.currentTime);
+            console.log(
+                `Playing ${type} via Web Audio API at volume ${volume}`
+            );
+
+            source.start();
+
+            // Add ended callback for debugging
+            source.onended = () => {
+                console.log(`${type} sound finished playing`);
+            };
+        } catch (error) {
+            console.error(`Error playing ${type} via Web Audio API:`, error);
+        }
+    }
 };
 
 // Budget Management Functions
@@ -213,6 +401,11 @@ const initAudio = async () => {
     }
     if (audioContext.state === "suspended") {
         await audioContext.resume();
+    }
+
+    // Always ensure audio files are loaded before proceeding
+    if (!isAudioLoaded.value) {
+        await loadAudioFiles();
     }
 };
 
@@ -511,10 +704,22 @@ const updateInstrumentConfig = (levelData) => {
             currentDebugPattern.value = { ...levelData.debugPattern };
         }
 
-        // Reset all patterns when switching levels with new step count
-        tracks.value.forEach((track) => {
-            track.pattern = new Array(steps.value).fill(false);
-        });
+        // Only reset patterns if the step count has changed to avoid losing user's work
+        const currentStepCount = tracks.value[0]?.pattern.length || 0;
+        if (currentStepCount !== steps.value) {
+            tracks.value.forEach((track) => {
+                const oldPattern = track.pattern;
+                track.pattern = new Array(steps.value).fill(false);
+                // Preserve existing pattern if the new step count is larger
+                for (
+                    let i = 0;
+                    i < Math.min(oldPattern.length, steps.value);
+                    i++
+                ) {
+                    track.pattern[i] = oldPattern[i];
+                }
+            });
+        }
 
         // Reset budget usage
         budgetUsage.value = {
@@ -638,11 +843,22 @@ const globalStopDrawing = () => {
 };
 
 // Setup global mouse events for drawing
-onMounted(() => {
+onMounted(async () => {
     document.addEventListener("mouseup", globalStopDrawing);
     document.addEventListener("mouseleave", globalStopDrawing);
     // Initialize budget usage
     updateBudgetUsage();
+
+    // Pre-load audio for better performance
+    try {
+        await initAudio();
+        console.log("Audio initialized and sounds pre-loaded");
+    } catch (error) {
+        console.warn(
+            "Audio initialization failed (this is normal until user interaction):",
+            error
+        );
+    }
 
     // Request current level info from the game when component mounts
     setTimeout(() => {
