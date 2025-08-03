@@ -10,6 +10,7 @@ const game = ref();
 // Debug toggle states - disabled by default
 const showGrid = ref(false);
 const showCollisions = ref(false);
+const selectedLevel = ref(0);
 
 const emit = defineEmits(["current-active-scene"]);
 
@@ -28,6 +29,12 @@ const toggleCollisions = () => {
     }
 };
 
+const loadLevel = () => {
+    if (scene.value) {
+        EventBus.emit("load-specific-level", selectedLevel.value);
+    }
+};
+
 onMounted(() => {
     game.value = StartGame("game-container");
 
@@ -36,6 +43,11 @@ onMounted(() => {
 
         scene.value = currentScene;
     });
+
+    // Listen for level changes to keep dropdown in sync
+    EventBus.on("level-changed", (levelData) => {
+        selectedLevel.value = levelData.levelIndex;
+    });
 });
 
 onUnmounted(() => {
@@ -43,6 +55,9 @@ onUnmounted(() => {
         game.value.destroy(true);
         game.value = null;
     }
+
+    // Clean up event listeners
+    EventBus.off("level-changed");
 });
 
 defineExpose({ scene, game });
@@ -66,6 +81,21 @@ defineExpose({ scene, game });
             >
                 🔲
             </button>
+            <div class="level-selector">
+                <select
+                    v-model="selectedLevel"
+                    @change="loadLevel"
+                    class="level-dropdown"
+                >
+                    <option value="0">Level 1</option>
+                    <option value="1">Level 2</option>
+                    <option value="2">Level 3</option>
+                    <option value="3">Level 4</option>
+                    <option value="4">Level 5</option>
+                    <option value="5">Level 6</option>
+                    <option value="6">Level 7</option>
+                </select>
+            </div>
         </div>
     </div>
 </template>
@@ -127,5 +157,44 @@ defineExpose({ scene, game });
 .debug-button.active:hover {
     background: rgba(0, 120, 240, 0.9);
     border-color: #0078f0;
+}
+
+.level-selector {
+    margin-bottom: 10px;
+}
+
+.level-dropdown {
+    width: 100px;
+    height: 40px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    padding: 0 10px;
+    text-align: center;
+}
+
+.level-dropdown:hover {
+    background: rgba(64, 64, 64, 0.9);
+    border-color: #666;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.level-dropdown:focus {
+    outline: none;
+    background: rgba(0, 100, 200, 0.8);
+    border-color: #0064c8;
+}
+
+.level-dropdown option {
+    background: #333;
+    color: #fff;
+    padding: 5px;
 }
 </style>

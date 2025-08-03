@@ -181,6 +181,7 @@ export class Game extends Scene {
         EventBus.on("toggle-grid", this.onToggleGrid, this);
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
         EventBus.on("switch-level", this.onSwitchLevel, this);
+        EventBus.on("load-specific-level", this.onLoadSpecificLevel, this);
         EventBus.on("request-current-level", this.onRequestCurrentLevel, this);
 
         // Listen for victory event
@@ -485,6 +486,23 @@ export class Game extends Scene {
 
     onSwitchLevel() {
         this.switchToNextLevel();
+    }
+
+    onLoadSpecificLevel(levelIndex) {
+        console.log(`Loading specific level: ${levelIndex + 1}`);
+
+        // Validate level index
+        if (levelIndex >= 0 && levelIndex < this.availableLevels.length) {
+            this.currentLevelIndex = levelIndex;
+            this.loadLevel(this.currentLevelIndex);
+
+            // Reset game state when switching levels
+            this.onGameReset();
+
+            console.log(`Loaded Level ${levelIndex + 1}`);
+        } else {
+            console.warn(`Invalid level index: ${levelIndex}`);
+        }
     }
 
     onRequestCurrentLevel() {
