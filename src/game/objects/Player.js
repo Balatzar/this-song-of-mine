@@ -355,6 +355,12 @@ export class Player {
      * Handle manual player movement (now also handles simulated sequencer input)
      */
     handleManualMovement() {
+        // Check if we're in development mode to allow manual controls
+        // In production, only allow movement during sequencer mode
+        if (!import.meta.env.DEV && !this.scene.isSequencerMode) {
+            return;
+        }
+
         // Helper functions to check for input combinations (real keys + simulated keys)
         const isLeftPressed =
             this.cursors.left.isDown ||
