@@ -11,6 +11,7 @@ import { Level7 } from "../levels/Level7";
 import { Level8 } from "../levels/Level8";
 import { Level9 } from "../levels/Level9";
 import { Level10 } from "../levels/Level10";
+import { Level11 } from "../levels/Level11";
 
 export class Game extends Scene {
     constructor() {
@@ -31,6 +32,7 @@ export class Game extends Scene {
             Level8,
             Level9,
             Level10,
+            Level11,
         ];
         this.currentLevelIndex = 0;
 
@@ -544,7 +546,7 @@ export class Game extends Scene {
     }
 
     /**
-     * Proceed to the next level or restart from level 1 if all levels completed
+     * Proceed to the next level or stay on victory screen if completed
      */
     proceedToNextLevel() {
         console.log("Proceeding to next level...");
@@ -552,16 +554,18 @@ export class Game extends Scene {
         // Resume physics before switching levels
         this.physics.resume();
 
-        // Calculate next level index (cycle back to 0 if we've completed all levels)
-        const nextLevelIndex =
-            (this.currentLevelIndex + 1) % this.availableLevels.length;
+        // Level 11 (index 10) is the victory screen - stay there
+        if (this.currentLevelIndex === this.availableLevels.length - 1) {
+            console.log("Already on victory screen (Level 11) - staying here.");
+            return;
+        }
 
-        // Check if we completed all levels
-        if (
-            nextLevelIndex === 0 &&
-            this.currentLevelIndex === this.availableLevels.length - 1
-        ) {
-            console.log("All levels completed! Starting over from Level 1.");
+        // Calculate next level index
+        const nextLevelIndex = this.currentLevelIndex + 1;
+
+        // Check if we're reaching the victory screen
+        if (nextLevelIndex === this.availableLevels.length - 1) {
+            console.log("Reaching Level 11 - Victory Screen!");
         }
 
         this.currentLevelIndex = nextLevelIndex;
