@@ -614,6 +614,16 @@ const shouldShowInstrumentColor = computed(() => {
     };
 });
 
+// Computed property to calculate number of measures
+const measureCount = computed(() => {
+    return steps.value / 4; // 4 beats per measure
+});
+
+// Computed property for track steps styling class
+const trackStepsClass = computed(() => {
+    return measureCount.value > 2 ? "track-steps-with-margin" : "";
+});
+
 // Global mouse up handler for drawing
 const globalStopDrawing = () => {
     if (isDrawing.value && !hasMoved.value) {
@@ -764,7 +774,7 @@ onUnmounted(() => {
                         {{ getBudgetDisplay(track.name) }}
                     </div>
                 </div>
-                <div class="track-steps">
+                <div class="track-steps" :class="trackStepsClass">
                     <button
                         v-for="(step, stepIndex) in track.pattern"
                         :key="stepIndex"
@@ -1205,6 +1215,9 @@ onUnmounted(() => {
 
     .track-steps {
         gap: 2px;
+    }
+
+    .track-steps-with-margin {
         margin-left: 200px;
     }
 }
