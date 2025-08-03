@@ -119,12 +119,9 @@ export class Level7 extends BaseLevel {
         const saw1 = new Saw(this.scene, 9, 5, 0, 0, this.player, 4 * 64);
         this.addEnemy(saw1);
 
-        this.createBlockAt(10, 1, "bricks_brown");
-        this.createBlockAt(10, 2, "bricks_brown");
-        this.createBlockAt(11, 1, "bricks_brown");
-        this.createBlockAt(11, 2, "bricks_brown");
-        this.createBlockAt(12, 1, "bricks_brown");
-        this.createBlockAt(12, 2, "bricks_brown");
+        this.createWall(10, 1, 10, 2, "bricks_brown");
+        this.createWall(11, 1, 11, 2, "bricks_brown");
+        this.createWall(12, 1, 12, 2, "bricks_brown");
 
         this.createWall(14, 3, 14, 8, "bricks_brown");
 

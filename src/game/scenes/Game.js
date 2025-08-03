@@ -123,10 +123,6 @@ export class Game extends Scene {
         this.physics.add.existing(collider, true); // true => static body
         this.platforms.add(collider);
 
-        // Optional: for "platforms" you can make top-only by disabling other sides:
-        // collider.body.checkCollision.down = collider.body.checkCollision.left =
-        // collider.body.checkCollision.right = false;
-
         return collider;
     }
 
@@ -437,7 +433,7 @@ export class Game extends Scene {
         const gameOverText = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.centerY - 50,
-            "GAME OVER!\nYou touched a snail!",
+            "GAME OVER!\nYou touched an enemy!",
             {
                 fontSize: "48px",
                 fontFamily: "Arial",
