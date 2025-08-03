@@ -62,6 +62,15 @@ export class BaseLevel {
     }
 
     /**
+     * Get the debug pattern for this level
+     * Returns a pattern object with each instrument's pattern array
+     * @returns {Object} Debug pattern for development use
+     */
+    getDebugPattern() {
+        return {};
+    }
+
+    /**
      * Update level-specific logic
      * Called every frame
      */
@@ -139,6 +148,15 @@ export class BaseLevel {
             texture,
             offsetX,
             offsetY
+        );
+    }
+    createWall(fromBlockX, fromBlockY, toBlockX, toBlockY, texture) {
+        return this.scene.createWall(
+            fromBlockX,
+            fromBlockY,
+            toBlockX,
+            toBlockY,
+            texture
         );
     }
 

@@ -32,6 +32,13 @@ export class Level1 extends BaseLevel {
         return 1;
     }
 
+    getDebugPattern() {
+        // Simple pattern for Level 1 - just Hi-Hat on every beat for 4 steps
+        return {
+            "Hi-Hat": [true, true, true, true],
+        };
+    }
+
     create() {
         console.log("Creating Level 1...");
 

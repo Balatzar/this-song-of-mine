@@ -15,6 +15,9 @@ import drumCrawlAUrl from "../../assets/Sprites/Enemies/Default/drum_crawl_a.png
 import drumCrawlBUrl from "../../assets/Sprites/Enemies/Default/drum_crawl_b.png?url";
 import drumRestUrl from "../../assets/Sprites/Enemies/Default/drum_rest.png?url";
 import drumHurteUrl from "../../assets/Sprites/Enemies/Default/drum_hurt.png?url";
+import sawRestUrl from "../../assets/Sprites/Enemies/Default/saw_rest.png?url";
+import sawAUrl from "../../assets/Sprites/Enemies/Default/saw_a.png?url";
+import sawBUrl from "../../assets/Sprites/Enemies/Default/saw_b.png?url";
 
 export class Preloader extends Scene {
     constructor() {
@@ -44,6 +47,9 @@ export class Preloader extends Scene {
         this.load.image("drum_crawl_b", drumCrawlBUrl);
         this.load.image("drum_rest", drumRestUrl);
         this.load.image("drum_hurt", drumHurteUrl);
+        this.load.image("saw_rest", sawRestUrl);
+        this.load.image("saw_a", sawAUrl);
+        this.load.image("saw_b", sawBUrl);
     }
 
     create() {
@@ -55,6 +61,14 @@ export class Preloader extends Scene {
             key: "drum_crawl",
             frames: [{ key: "drum_crawl_a" }, { key: "drum_crawl_b" }],
             frameRate: 4, // Slow animation for crawling effect
+            repeat: -1, // Loop forever
+        });
+
+        // Create saw spinning animation
+        this.anims.create({
+            key: "saw_spin",
+            frames: [{ key: "saw_a" }, { key: "saw_b" }],
+            frameRate: 8, // Fast animation for spinning effect
             repeat: -1, // Loop forever
         });
 

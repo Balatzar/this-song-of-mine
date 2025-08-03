@@ -149,9 +149,10 @@ export class Player {
         // Detect phone mode: when canvas is higher than it is wide
         const gameWidth = this.scene.sys.game.config.width;
         const isPhoneMode = gameWidth < 768;
+        const isTabletMode = gameWidth >= 768 && gameWidth < 1024;
 
         // Set zoom level based on device orientation
-        const zoomLevel = isPhoneMode ? 0.5 : 1;
+        const zoomLevel = isPhoneMode ? 0.5 : isTabletMode ? 0.7 : 1.2;
         this.scene.cameras.main.setZoom(zoomLevel);
 
         const worldWidth = this.scene.physics.world.bounds.width;

@@ -35,6 +35,66 @@ export class Level5 extends BaseLevel {
         return 2; // Level 1 uses 2 loops
     }
 
+    getDebugPattern() {
+        // More complex pattern for Level 5 - includes Kick, Snare, and Hi-Hat
+        return {
+            Kick: [
+                true,
+                false,
+                false,
+                false, // Strong on beat 1
+                false,
+                false,
+                true,
+                false, // Kick on beat 3
+                true,
+                false,
+                false,
+                false, // Strong on beat 9
+                false,
+                false,
+                true,
+                false, // Kick on beat 15
+            ],
+            Snare: [
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
+                false,
+                false, // Snare on beat 5
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
+                false,
+                false, // Snare on beat 13
+            ],
+            "Hi-Hat": [
+                true,
+                true,
+                false,
+                true, // Varied hi-hat pattern
+                true,
+                false,
+                true,
+                true,
+                true,
+                true,
+                false,
+                true,
+                true,
+                false,
+                true,
+                true,
+            ],
+        };
+    }
+
     create() {
         console.log("Creating Level 1...");
 
@@ -79,10 +139,10 @@ export class Level5 extends BaseLevel {
 
         // Create bridge segments
         const bridge1 = new Bridge(this.scene, 8, 2, -0, 3, this.player);
-        const bridge2 = new Bridge(this.scene, 9, 2, -20, 3, this.player);
-        const bridge3 = new Bridge(this.scene, 10, 2, -20, 3, this.player);
         this.addLevelObject(bridge1);
+        const bridge2 = new Bridge(this.scene, 9, 2, -20, 3, this.player);
         this.addLevelObject(bridge2);
+        const bridge3 = new Bridge(this.scene, 10, 2, -20, 3, this.player);
         this.addLevelObject(bridge3);
 
         console.log("Level 1 created successfully");

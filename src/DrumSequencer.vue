@@ -7,6 +7,7 @@ import kickIconUrl from "./assets/Icons/kick.png?url";
 import snareIconUrl from "./assets/Icons/snare.png?url";
 import hiHatIconUrl from "./assets/Icons/hi-hat.png?url";
 import hiHatOpenIconUrl from "./assets/Icons/hi-hat-open.png?url";
+import crashIconUrl from "./assets/Icons/cymbals.png?url";
 
 // Environment detection
 const isDevelopment = import.meta.env.DEV;
@@ -38,12 +39,13 @@ const initialStep = ref({ trackIndex: null, stepIndex: null }); // Track initial
 
 // Level-specific instrument configuration
 const currentLevelConfig = ref({
-    availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat"],
+    availableInstruments: ["Kick", "Snare", "Hi-Hat", "Open Hat", "Crash"],
     budgetConfig: {
         Kick: { max: 4, unlimited: false },
         Snare: { max: 2, unlimited: false },
         "Hi-Hat": { max: 0, unlimited: true },
         "Open Hat": { max: 0, unlimited: true },
+        Crash: { max: 0, unlimited: true },
     },
 });
 
@@ -56,6 +58,7 @@ const budgetConfig = ref({
     Snare: { max: 2, unlimited: false },
     "Hi-Hat": { max: 0, unlimited: true },
     "Open Hat": { max: 0, unlimited: true },
+    Crash: { max: 0, unlimited: true },
 });
 
 // Budget tracking
@@ -64,7 +67,11 @@ const budgetUsage = ref({
     Snare: 0,
     "Hi-Hat": 0,
     "Open Hat": 0,
+    Crash: 0,
 });
+
+// Current level's debug pattern
+const currentDebugPattern = ref({});
 
 // Drum tracks
 const tracks = ref([
@@ -95,6 +102,13 @@ const tracks = ref([
         icon: hiHatOpenIconUrl,
         pattern: new Array(steps.value).fill(false),
         color: "#ffff44",
+    },
+    {
+        name: "Crash",
+        ability: "Trigger Saw",
+        icon: crashIconUrl,
+        pattern: new Array(steps.value).fill(false),
+        color: "#ff8800",
     },
 ]);
 
@@ -287,6 +301,14 @@ const play = () => {
             tracks.value.forEach((track) => {
                 if (track.pattern[currentStep.value]) {
                     createDrumSound(track.name);
+
+                    // Handle environment instruments (like crash)
+                    if (track.name === "Crash") {
+                        EventBus.emit("crash-triggered");
+                        console.log(
+                            "Crash instrument triggered - saw should wake up!"
+                        );
+                    }
                 }
             });
 
@@ -433,85 +455,30 @@ const createDebugPattern = () => {
     // Prevent modifications while playing
     if (isPlaying.value) return;
 
-    // Create a simple but musically useful drum pattern for testing
-    const patterns = {
-        Kick: [
-            false,
-            false,
-            false,
-            false,
-            true,
-            false,
-            false,
-            false,
-            true,
-            false,
-            false,
-            false,
-            true,
-            false,
-            false,
-            false,
-        ],
-        Snare: [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        ],
-        "Hi-Hat": [
-            true,
-            true,
-            true,
-            true,
-            false,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-            true,
-        ],
-        "Open Hat": [
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        ],
-    };
+    // Only apply pattern if a level-specific debug pattern is available
+    if (Object.keys(currentDebugPattern.value).length === 0) {
+        return; // Do nothing if no debug pattern is provided
+    }
+
+    const patterns = currentDebugPattern.value;
 
     tracks.value.forEach((track) => {
         if (patterns[track.name]) {
-            track.pattern = [...patterns[track.name]];
+            // Adjust pattern length to match current step count
+            const pattern = patterns[track.name];
+            const adjustedPattern = new Array(steps.value).fill(false);
+
+            // Copy pattern data, repeating or truncating as needed
+            for (let i = 0; i < steps.value; i++) {
+                if (i < pattern.length) {
+                    adjustedPattern[i] = pattern[i];
+                } else {
+                    // Repeat pattern if level has more steps than pattern
+                    adjustedPattern[i] = pattern[i % pattern.length];
+                }
+            }
+
+            track.pattern = adjustedPattern;
         }
     });
     updateBudgetUsage();
@@ -539,6 +506,11 @@ const updateInstrumentConfig = (levelData) => {
             maxLoops.value = levelData.maxLoops;
         }
 
+        // Store the level's debug pattern
+        if (levelData.debugPattern) {
+            currentDebugPattern.value = { ...levelData.debugPattern };
+        }
+
         // Reset all patterns when switching levels with new step count
         tracks.value.forEach((track) => {
             track.pattern = new Array(steps.value).fill(false);
@@ -550,6 +522,7 @@ const updateInstrumentConfig = (levelData) => {
             Snare: 0,
             "Hi-Hat": 0,
             "Open Hat": 0,
+            Crash: 0,
         };
 
         // Reset loop counter when switching levels

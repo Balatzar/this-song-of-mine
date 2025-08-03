@@ -7,6 +7,7 @@ import { Level3 } from "../levels/Level3";
 import { Level4 } from "../levels/Level4";
 import { Level5 } from "../levels/Level5";
 import { Level6 } from "../levels/Level6";
+import { Level7 } from "../levels/Level7";
 
 export class Game extends Scene {
     constructor() {
@@ -16,9 +17,16 @@ export class Game extends Scene {
 
         // Level management
         this.currentLevel = null;
-        this.availableLevels = [Level1, Level2, Level3, Level4, Level5, Level6];
-        this.availableLevels = [Level6];
-        this.currentLevelIndex = 0;
+        this.availableLevels = [
+            Level1,
+            Level2,
+            Level3,
+            Level4,
+            Level5,
+            Level6,
+            Level7,
+        ];
+        this.currentLevelIndex = 6; // Start on Level 7 for testing the new saw mechanic
 
         // Sequencer state management
         this.isSequencerMode = false;
@@ -50,7 +58,76 @@ export class Game extends Scene {
             this.blockSize / 2 +
             offsetY;
 
-        return this.platforms.create(pixelX, pixelY, texture);
+        // Create a static sprite for the platform
+        const block = this.physics.add.staticSprite(pixelX, pixelY, texture);
+
+        // Set collision body to be a perfect square covering the entire block area
+        // This prevents players from climbing through gaps in the sprite
+        block.body.setSize(this.blockSize + 10, this.blockSize + 10);
+        block.body.setOffset(-5, -5);
+        block.refreshBody(); // for static bodies
+
+        // Add to platforms group for collision with player
+        this.platforms.add(block);
+
+        return block;
+    }
+
+    // Helper: place one tile sprite WITHOUT physics
+    placeTileNoPhysics(blockX, blockY, texture) {
+        const bs = this.blockSize;
+        const worldH = this.physics.world.bounds.height;
+        const x = blockX * bs + bs / 2;
+        const y = worldH - (blockY + 1) * bs + bs / 2;
+        return this.add.image(x, y, texture);
+    }
+
+    // Build a wall/rectangle from (fromBlockX, fromBlockY) to (toBlockX, toBlockY), inclusive.
+    // Places visual tiles and adds ONE static collider that covers the whole area.
+    createWall(fromBlockX, fromBlockY, toBlockX, toBlockY, texture) {
+        const bs = this.blockSize;
+        const worldH = this.physics.world.bounds.height;
+
+        const minX = Math.min(fromBlockX, toBlockX);
+        const maxX = Math.max(fromBlockX, toBlockX);
+        const minY = Math.min(fromBlockY, toBlockY);
+        const maxY = Math.max(fromBlockY, toBlockY);
+
+        // 1) Place the visual tiles (no physics bodies on them)
+        for (let by = minY; by <= maxY; by++) {
+            for (let bx = minX; bx <= maxX; bx++) {
+                this.placeTileNoPhysics(bx, by, texture);
+            }
+        }
+
+        // 2) Add ONE static collider that spans the whole area (with a tiny bleed)
+        const x0 = minX * bs + bs / 2;
+        const x1 = maxX * bs + bs / 2;
+        const y0 = worldH - minY * bs - bs / 2;
+        const y1 = worldH - maxY * bs - bs / 2;
+
+        const centerX = (x0 + x1) / 2;
+        const centerY = (y0 + y1) / 2;
+
+        const width = (maxX - minX + 1) * bs + 2; // +2 to avoid tiny seams with neighbors
+        const height = (maxY - minY + 1) * bs + 2;
+
+        const collider = this.add.rectangle(
+            centerX,
+            centerY,
+            width,
+            height,
+            0x000000,
+            0
+        );
+        this.physics.add.existing(collider, true); // true => static body
+        this.platforms.add(collider);
+
+        // Optional: for "platforms" you can make top-only by disabling other sides:
+        // collider.body.checkCollision.down = collider.body.checkCollision.left =
+        // collider.body.checkCollision.right = false;
+
+        return collider;
     }
 
     /**
@@ -138,6 +215,7 @@ export class Game extends Scene {
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
+        const debugPattern = this.currentLevel.getDebugPattern();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -147,6 +225,7 @@ export class Game extends Scene {
             instrumentConfig: instrumentConfig,
             measureCount: measureCount,
             maxLoops: maxLoops,
+            debugPattern: debugPattern,
         });
 
         console.log(`Level ${levelIndex + 1} loaded successfully`);
@@ -167,6 +246,7 @@ export class Game extends Scene {
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
+        const debugPattern = this.currentLevel.getDebugPattern();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -176,6 +256,7 @@ export class Game extends Scene {
             instrumentConfig: instrumentConfig,
             measureCount: measureCount,
             maxLoops: maxLoops,
+            debugPattern: debugPattern,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
@@ -266,7 +347,13 @@ export class Game extends Scene {
     }
 
     onPlayerDied() {
-        console.log("Player died! Touched a snail.");
+        // Only kill player in sequencer mode - player is invincible in manual mode
+        if (!this.isSequencerMode) {
+            console.log("Player hit enemy in manual mode - invincible!");
+            return;
+        }
+
+        console.log("Player died! Touched an enemy.");
         this.isGameOver = true;
 
         // Stop the sequencer
@@ -456,6 +543,7 @@ export class Game extends Scene {
         const instrumentConfig = this.currentLevel.getInstrumentConfig();
         const measureCount = this.currentLevel.getMeasureCount();
         const maxLoops = this.currentLevel.getMaxLoops();
+        const debugPattern = this.currentLevel.getDebugPattern();
 
         // Emit level change event for UI updates
         EventBus.emit("level-changed", {
@@ -465,6 +553,7 @@ export class Game extends Scene {
             instrumentConfig: instrumentConfig,
             measureCount: measureCount,
             maxLoops: maxLoops,
+            debugPattern: debugPattern,
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
