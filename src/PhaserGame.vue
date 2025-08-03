@@ -7,14 +7,15 @@ import StartGame from "./game/main";
 const scene = ref();
 const game = ref();
 
-// Debug toggle states - disabled by default
+// Debug toggle states - disabled by default, only available in dev mode
+const isDevMode = import.meta.env.DEV;
 const showGrid = ref(false);
 const showCollisions = ref(false);
 const selectedLevel = ref(0);
 
 const emit = defineEmits(["current-active-scene"]);
 
-// Toggle functions
+// Debug functions
 const toggleGrid = () => {
     showGrid.value = !showGrid.value;
     if (scene.value) {
@@ -66,7 +67,7 @@ defineExpose({ scene, game });
 <template>
     <div class="game-wrapper">
         <div id="game-container"></div>
-        <div class="floating-buttons">
+        <div v-if="isDevMode" class="floating-buttons">
             <button
                 @click="toggleGrid"
                 :class="['debug-button', { active: showGrid }]"
