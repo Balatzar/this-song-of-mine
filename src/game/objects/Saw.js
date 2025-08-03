@@ -124,16 +124,14 @@ export class Saw {
      * Handle crash instrument being triggered
      */
     onCrashTriggered() {
-        if (this.state === "dormant") {
-            console.log("Saw awakened by crash!");
-            this.state = "dropping";
+        console.log("Saw awakened by crash!");
+        this.state = "dropping";
 
-            // Switch to spinning animation
-            this.sprite.play("saw_spin");
+        // Switch to spinning animation
+        this.sprite.play("saw_spin");
 
-            // Enable movement for dropping
-            this.sprite.body.moves = true;
-        }
+        // Enable movement for dropping
+        this.sprite.body.moves = true;
     }
 
     /**
@@ -179,18 +177,53 @@ export class Saw {
     }
 
     /**
-     * Reset the saw to its initial state
+     * Respawn the saw if it has been destroyed
      */
-    reset() {
-        if (!this.sprite) return;
+    respawn() {
+        if (this.sprite) return; // Already exists, no need to respawn
+
+        // Recreate the sprite
+        this.sprite = this.scene.physics.add.sprite(0, 0, "saw_rest");
+
+        // Set up physics again
+        this.setupPhysics();
+
+        // Position the saw using stored spawn parameters
+        this.setBlockPosition(
+            this.spawnParams.blockX,
+            this.spawnParams.blockY,
+            this.spawnParams.offsetX,
+            this.spawnParams.offsetY
+        );
+
+        // Set up collisions again
+        if (this.player) {
+            this.setupCollisions(this.player);
+        }
+
+        // Re-register for crash events
+        EventBus.on("crash-triggered", this.onCrashTriggered, this);
+
+        console.log("Saw respawned");
+    }
+
+    /**
+     * Reset saw to initial position and state
+     */
+    resetToInitialState() {
+        if (!this.initialPosition) return;
+
+        // Respawn if the saw was destroyed
+        this.respawn();
 
         console.log("Resetting saw to initial state");
 
-        // Reset position and state
+        // Reset position and state using stored initial values
         this.sprite.setPosition(this.initialPosition.x, this.initialPosition.y);
         this.sprite.setVelocity(0, 0);
-        this.state = "dormant";
+        this.state = this.initialPosition.state;
         this.startY = this.initialPosition.startY;
+        this.targetY = this.startY + this.dropDistance;
 
         // Reset sprite to rest texture
         this.sprite.setTexture("saw_rest");

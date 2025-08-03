@@ -39,56 +39,56 @@ export class Level5 extends BaseLevel {
         // More complex pattern for Level 5 - includes Kick, Snare, and Hi-Hat
         return {
             Kick: [
-                true,
                 false,
                 false,
-                false, // Strong on beat 1
-                false,
-                false,
-                true,
-                false, // Kick on beat 3
-                true,
-                false,
-                false,
-                false, // Strong on beat 9
                 false,
                 false,
                 true,
-                false, // Kick on beat 15
+                false,
+                false,
+                true,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                true,
+                false,
             ],
             Snare: [
                 false,
                 false,
                 false,
                 false,
-                true,
-                false,
-                false,
-                false, // Snare on beat 5
                 false,
                 false,
                 false,
                 false,
-                true,
                 false,
                 false,
-                false, // Snare on beat 13
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
             ],
             "Hi-Hat": [
                 true,
                 true,
-                false,
-                true, // Varied hi-hat pattern
-                true,
-                false,
                 true,
                 true,
                 true,
                 true,
-                false,
                 true,
                 true,
-                false,
+                true,
+                true,
+                true,
+                true,
+                true,
+                true,
                 true,
                 true,
             ],
@@ -96,8 +96,6 @@ export class Level5 extends BaseLevel {
     }
 
     create() {
-        console.log("Creating Level 1...");
-
         // Create extended floor - cover much more ground for the larger world
         const worldWidth = this.scene.physics.world.bounds.width;
         const blocksPerRow = Math.ceil(worldWidth / this.scene.blockSize);

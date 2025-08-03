@@ -11,7 +11,7 @@ export class Level2 extends BaseLevel {
     }
 
     getPlayerStartPosition() {
-        return { x: 200, y: null }; // y will be calculated by Player class
+        return { x: 800, y: null }; // y will be calculated by Player class
     }
 
     getInstrumentConfig() {
@@ -32,6 +32,13 @@ export class Level2 extends BaseLevel {
         return 1; // Level 2 uses only 1 loop for quick completion
     }
 
+    getDebugPattern() {
+        return {
+            "Hi-Hat": [true, true, true, true, true, true, true, true],
+            Kick: [false, false, false, true, false, false, false, false],
+        };
+    }
+
     create() {
         console.log("Creating Level 2...");
 
@@ -46,10 +53,10 @@ export class Level2 extends BaseLevel {
         const startPos = this.getPlayerStartPosition();
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
 
-        this.createBlockAt(6, 1, "bricks_brown", 0, 0);
+        this.createBlockAt(17, 1, "bricks_brown", 0, 0);
 
         // Create exit sign
-        const exitSign = new ExitSign(this.scene, 8, 1, 10, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 20, 1, 0, 0, this.player);
         this.addLevelObject(exitSign);
 
         console.log("Level 2 created successfully");

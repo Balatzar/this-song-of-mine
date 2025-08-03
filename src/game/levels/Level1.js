@@ -12,7 +12,7 @@ export class Level1 extends BaseLevel {
 
     getPlayerStartPosition() {
         // Original starting position from Game.js
-        return { x: 200, y: null }; // y will be calculated by Player class
+        return { x: 600, y: null }; // y will be calculated by Player class
     }
 
     getInstrumentConfig() {
@@ -25,7 +25,7 @@ export class Level1 extends BaseLevel {
     }
 
     getMeasureCount() {
-        return 1;
+        return 2;
     }
 
     getMaxLoops() {
@@ -35,7 +35,7 @@ export class Level1 extends BaseLevel {
     getDebugPattern() {
         // Simple pattern for Level 1 - just Hi-Hat on every beat for 4 steps
         return {
-            "Hi-Hat": [true, true, true, true],
+            "Hi-Hat": [true, true, true, true, true, true, true, true],
         };
     }
 
@@ -54,7 +54,7 @@ export class Level1 extends BaseLevel {
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
 
         // Create exit sign
-        const exitSign = new ExitSign(this.scene, 6, 1, 10, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 16, 1, 0, 0, this.player);
         this.addLevelObject(exitSign);
 
         console.log("Level 1 created successfully");

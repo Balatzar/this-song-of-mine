@@ -26,7 +26,7 @@ export class Game extends Scene {
             Level6,
             Level7,
         ];
-        this.currentLevelIndex = 6; // Start on Level 7 for testing the new saw mechanic
+        this.currentLevelIndex = 0;
 
         // Sequencer state management
         this.isSequencerMode = false;
@@ -290,6 +290,11 @@ export class Game extends Scene {
 
         console.log("Entered sequencer mode with clean reset");
 
+        // Start player trace recording
+        if (this.currentLevel && this.currentLevel.player) {
+            this.currentLevel.player.startTrace();
+        }
+
         // Notify sequencer that scene is ready to start playback
         EventBus.emit("sequencer-ready-to-play");
     }
@@ -303,6 +308,11 @@ export class Game extends Scene {
         // Exit sequencer mode - return to manual controls
         this.isSequencerMode = false;
         this.sequencerData = null;
+
+        // Stop player trace recording
+        if (this.currentLevel && this.currentLevel.player) {
+            this.currentLevel.player.stopTrace();
+        }
 
         console.log("Exited sequencer mode with clean reset");
     }

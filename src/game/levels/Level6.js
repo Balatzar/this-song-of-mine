@@ -14,10 +14,9 @@ export class Level6 extends BaseLevel {
 
     getInstrumentConfig() {
         return {
-            availableInstruments: ["Kick", "Snare", "Hi-Hat"],
+            availableInstruments: ["Kick", "Hi-Hat"],
             budgetConfig: {
                 Kick: { max: 2, unlimited: false },
-                Snare: { max: 1, unlimited: false },
                 "Hi-Hat": { max: 0, unlimited: true },
             },
         };
@@ -28,7 +27,14 @@ export class Level6 extends BaseLevel {
     }
 
     getMaxLoops() {
-        return 4;
+        return 3;
+    }
+
+    getDebugPattern() {
+        return {
+            "Hi-Hat": [true, true, true, true, true, true, true, true],
+            Kick: [false, false, true, false, false, true, false, false],
+        };
     }
 
     create() {
@@ -65,7 +71,7 @@ export class Level6 extends BaseLevel {
 
         const drummy2 = new Drummy(
             this.scene,
-            19,
+            16,
             5,
             0,
             0,
@@ -74,18 +80,16 @@ export class Level6 extends BaseLevel {
         );
         this.addEnemy(drummy2);
 
+        this.createBlockAt(19, 8, "bricks_brown", 0, 0);
+        this.createBlockAt(20, 8, "bricks_brown", 0, 0);
         this.createBlockAt(21, 8, "bricks_brown", 0, 0);
         this.createBlockAt(22, 8, "bricks_brown", 0, 0);
         this.createBlockAt(23, 8, "bricks_brown", 0, 0);
         this.createBlockAt(24, 8, "bricks_brown", 0, 0);
         this.createBlockAt(25, 8, "bricks_brown", 0, 0);
-        this.createBlockAt(26, 8, "bricks_brown", 0, 0);
-        this.createBlockAt(27, 8, "bricks_brown", 0, 0);
-        this.createBlockAt(28, 8, "bricks_brown", 0, 0);
-        this.createBlockAt(29, 8, "bricks_brown", 0, 0);
 
         // Create exit sign far enough to require using the drummies as trampolines
-        const exitSign = new ExitSign(this.scene, 29, 9, 0, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 25, 9, 0, 0, this.player);
         this.addLevelObject(exitSign);
     }
 }

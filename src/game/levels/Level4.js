@@ -30,6 +30,13 @@ export class Level4 extends BaseLevel {
         return 2;
     }
 
+    getDebugPattern() {
+        return {
+            "Hi-Hat": [true, true, true, true, true, true, true, true],
+            Kick: [false, true, false, false, false, true, false, false],
+        };
+    }
+
     create() {
         // Create extended floor
         const worldWidth = this.scene.physics.world.bounds.width;

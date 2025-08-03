@@ -9,7 +9,7 @@ export class Level3 extends BaseLevel {
     }
 
     getPlayerStartPosition() {
-        return { x: 200, y: null }; // y will be calculated by Player class
+        return { x: 600, y: null }; // y will be calculated by Player class
     }
 
     getInstrumentConfig() {
@@ -30,6 +30,13 @@ export class Level3 extends BaseLevel {
         return 4;
     }
 
+    getDebugPattern() {
+        return {
+            "Hi-Hat": [true, true, true, true],
+            Kick: [false, true, false, false],
+        };
+    }
+
     create() {
         // Create extended floor
         const worldWidth = this.scene.physics.world.bounds.width;
@@ -42,12 +49,12 @@ export class Level3 extends BaseLevel {
         const startPos = this.getPlayerStartPosition();
         this.player = new Player(this.scene, this.scene.platforms, startPos.x);
 
-        this.createBlockAt(6, 1, "bricks_brown", 0, 0);
+        this.createBlockAt(13, 1, "bricks_brown", 0, 0);
 
-        const snail1 = new Snail(this.scene, 15, 1, 0, 0, this.player, 4 * 64);
+        const snail1 = new Snail(this.scene, 17, 1, 0, 0, this.player, 2 * 64);
         this.addEnemy(snail1);
 
-        const exitSign = new ExitSign(this.scene, 16, 1, 0, 0, this.player);
+        const exitSign = new ExitSign(this.scene, 20, 1, 0, 0, this.player);
         this.addLevelObject(exitSign);
     }
 }

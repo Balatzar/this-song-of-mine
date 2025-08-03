@@ -29,11 +29,11 @@ export class Level7 extends BaseLevel {
     }
 
     getMeasureCount() {
-        return 3;
+        return 4;
     }
 
     getMaxLoops() {
-        return 4;
+        return 3;
     }
 
     getDebugPattern() {
@@ -52,8 +52,16 @@ export class Level7 extends BaseLevel {
                 false,
                 false,
                 false,
+                false,
+                true,
+                false,
+                false,
             ],
             "Hi-Hat": [
+                true,
+                true,
+                true,
+                true,
                 true,
                 true,
                 true,
@@ -75,10 +83,14 @@ export class Level7 extends BaseLevel {
                 false,
                 false,
                 false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
                 true,
-                false,
-                false,
-                false,
                 false,
             ],
         };
@@ -122,14 +134,16 @@ export class Level7 extends BaseLevel {
         this.addLevelObject(bridge2);
         const bridge3 = new Bridge(this.scene, 16, 2, 0, 0, this.player);
         this.addLevelObject(bridge3);
-        const bridge4 = new Bridge(this.scene, 17, 2, 0, 0, this.player);
-        this.addLevelObject(bridge4);
 
-        const saw2 = new Saw(this.scene, 18, 5, 0, 0, this.player, 4 * 64);
+        const saw2 = new Saw(this.scene, 19, 4, 0, 0, this.player, 4 * 64);
         this.addEnemy(saw2);
 
+        this.createBlockAt(21, 1, "bricks_brown");
+        this.createBlockAt(22, 2, "bricks_brown");
+        this.createBlockAt(23, 2, "bricks_brown");
+
         // Create exit sign on the final platform
-        const exitSign = new ExitSign(this.scene, 25, 4, 0, 10, this.player);
+        const exitSign = new ExitSign(this.scene, 23, 3, 0, 0, this.player);
         this.addLevelObject(exitSign);
 
         console.log("Level 7 - Saw Challenge created successfully");

@@ -51,6 +51,16 @@ export class Player {
             y: this.sprite.y,
             flipX: this.sprite.flipX || false,
         };
+
+        // Trace functionality for sequencer mode
+        this.trace = {
+            graphics: null,
+            points: [],
+            lastRecordedPosition: null,
+            isRecording: false,
+            minDistance: 5, // Minimum distance between trace points to avoid clutter
+        };
+        this.setupTrace();
     }
 
     setupPhysics() {
@@ -158,6 +168,94 @@ export class Player {
         const worldWidth = this.scene.physics.world.bounds.width;
         const worldHeight = this.scene.physics.world.bounds.height;
         this.scene.cameras.main.setBounds(0, 0, worldWidth, worldHeight);
+    }
+
+    setupTrace() {
+        // Create graphics object for drawing the trace
+        this.trace.graphics = this.scene.add.graphics();
+        this.trace.graphics.setDepth(-1); // Draw behind other objects
+    }
+
+    startTrace() {
+        // Start recording trace when sequencer mode begins
+        this.trace.isRecording = true;
+        this.trace.points = [];
+        this.trace.lastRecordedPosition = null;
+        this.clearTrace();
+    }
+
+    stopTrace() {
+        // Stop recording trace when sequencer mode ends
+        // Keep the trace visible so user can see the path taken
+        this.trace.isRecording = false;
+    }
+
+    clearTrace() {
+        // Clear the visual trace
+        if (this.trace.graphics) {
+            this.trace.graphics.clear();
+        }
+    }
+
+    addTracePoint() {
+        if (!this.trace.isRecording || !this.sprite) return;
+
+        const currentPos = {
+            x: this.sprite.x,
+            y: this.sprite.y,
+        };
+
+        // Only add point if we've moved far enough from the last recorded position
+        if (this.trace.lastRecordedPosition) {
+            const distance = Phaser.Math.Distance.Between(
+                currentPos.x,
+                currentPos.y,
+                this.trace.lastRecordedPosition.x,
+                this.trace.lastRecordedPosition.y
+            );
+
+            if (distance < this.trace.minDistance) {
+                return; // Too close to last point, skip
+            }
+        }
+
+        // Add the point to our trace
+        this.trace.points.push(currentPos);
+        this.trace.lastRecordedPosition = currentPos;
+
+        // Draw the trace
+        this.drawTrace();
+    }
+
+    drawTrace() {
+        if (!this.trace.graphics || this.trace.points.length < 2) return;
+
+        // Clear previous trace
+        this.trace.graphics.clear();
+
+        // Set line style for the trace
+        this.trace.graphics.lineStyle(3, 0xffffff, 0.8); // White line with 80% opacity
+
+        // Draw the path as a continuous line
+        this.trace.graphics.beginPath();
+
+        // Start from the first point
+        const firstPoint = this.trace.points[0];
+        this.trace.graphics.moveTo(firstPoint.x, firstPoint.y);
+
+        // Draw lines to each subsequent point
+        for (let i = 1; i < this.trace.points.length; i++) {
+            const point = this.trace.points[i];
+            this.trace.graphics.lineTo(point.x, point.y);
+        }
+
+        this.trace.graphics.strokePath();
+
+        // Add small dots at each recorded point for better visibility
+        this.trace.graphics.fillStyle(0xffffff, 1); // Solid white dots
+        this.trace.points.forEach((point) => {
+            this.trace.graphics.fillCircle(point.x, point.y, 1.5);
+        });
     }
 
     /**
@@ -336,6 +434,11 @@ export class Player {
      */
     update() {
         this.handleManualMovement();
+
+        // Add trace point if we're recording
+        if (this.trace.isRecording) {
+            this.addTracePoint();
+        }
     }
 
     /**
@@ -379,6 +482,9 @@ export class Player {
 
         // Play idle animation
         this.sprite.anims.play("idle", true);
+
+        // Stop trace recording but don't clear it
+        this.stopTrace();
     }
 
     /**
@@ -389,6 +495,12 @@ export class Player {
         if (this.dashTimer) {
             this.scene.time.removeEvent(this.dashTimer);
             this.dashTimer = null;
+        }
+
+        // Clean up trace graphics
+        if (this.trace && this.trace.graphics) {
+            this.trace.graphics.destroy();
+            this.trace.graphics = null;
         }
 
         if (this.sprite) {
