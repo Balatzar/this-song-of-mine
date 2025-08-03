@@ -14,7 +14,7 @@ export class Level8 extends BaseLevel {
     }
 
     getPlayerStartPosition() {
-        return { x: 400, y: 1600 };
+        return { x: 400, y: 1500 };
     }
 
     getInstrumentConfig() {
