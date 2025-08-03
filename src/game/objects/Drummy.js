@@ -113,7 +113,7 @@ export class Drummy {
         const playerBottom = playerBody.bottom;
         const drummyTop = drummyBody.top;
         const isJumpingOn =
-            playerBody.velocity.y > 0 && playerBottom <= drummyTop + 10;
+            playerBody.velocity.y > 0 && playerBottom <= drummyTop + 30;
 
         if (isJumpingOn) {
             // Player jumped on drummy - drummy launches player VERY high!

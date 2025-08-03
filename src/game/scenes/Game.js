@@ -10,6 +10,7 @@ import { Level6 } from "../levels/Level6";
 import { Level7 } from "../levels/Level7";
 import { Level8 } from "../levels/Level8";
 import { Level9 } from "../levels/Level9";
+import { Level10 } from "../levels/Level10";
 
 export class Game extends Scene {
     constructor() {
@@ -29,6 +30,7 @@ export class Game extends Scene {
             Level7,
             Level8,
             Level9,
+            Level10,
         ];
         this.currentLevelIndex = 0;
 
