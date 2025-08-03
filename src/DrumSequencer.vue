@@ -704,22 +704,10 @@ const updateInstrumentConfig = (levelData) => {
             currentDebugPattern.value = { ...levelData.debugPattern };
         }
 
-        // Only reset patterns if the step count has changed to avoid losing user's work
-        const currentStepCount = tracks.value[0]?.pattern.length || 0;
-        if (currentStepCount !== steps.value) {
-            tracks.value.forEach((track) => {
-                const oldPattern = track.pattern;
-                track.pattern = new Array(steps.value).fill(false);
-                // Preserve existing pattern if the new step count is larger
-                for (
-                    let i = 0;
-                    i < Math.min(oldPattern.length, steps.value);
-                    i++
-                ) {
-                    track.pattern[i] = oldPattern[i];
-                }
-            });
-        }
+        // Reset all patterns when switching levels - clean slate for each level
+        tracks.value.forEach((track) => {
+            track.pattern = new Array(steps.value).fill(false);
+        });
 
         // Reset budget usage
         budgetUsage.value = {
@@ -859,11 +847,6 @@ onMounted(async () => {
             error
         );
     }
-
-    // Request current level info from the game when component mounts
-    setTimeout(() => {
-        EventBus.emit("request-current-level");
-    }, 100);
 });
 
 // Cleanup

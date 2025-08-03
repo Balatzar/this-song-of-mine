@@ -178,7 +178,6 @@ export class Game extends Scene {
         EventBus.on("toggle-collisions", this.onToggleCollisions, this);
         EventBus.on("switch-level", this.onSwitchLevel, this);
         EventBus.on("load-specific-level", this.onLoadSpecificLevel, this);
-        EventBus.on("request-current-level", this.onRequestCurrentLevel, this);
 
         // Listen for victory event
         EventBus.on("player-won", this.onPlayerWon, this);
@@ -498,23 +497,6 @@ export class Game extends Scene {
             console.log(`Loaded Level ${levelIndex + 1}`);
         } else {
             console.warn(`Invalid level index: ${levelIndex}`);
-        }
-    }
-
-    onRequestCurrentLevel() {
-        // Send current level info when requested
-        if (this.currentLevel) {
-            const instrumentConfig = this.currentLevel.getInstrumentConfig();
-            const measureCount = this.currentLevel.getMeasureCount();
-            const maxLoops = this.currentLevel.getMaxLoops();
-            EventBus.emit("level-changed", {
-                levelIndex: this.currentLevelIndex,
-                levelNumber: this.currentLevelIndex + 1,
-                levelName: `Level ${this.currentLevelIndex + 1}`,
-                instrumentConfig: instrumentConfig,
-                measureCount: measureCount,
-                maxLoops: maxLoops,
-            });
         }
     }
 
