@@ -5,10 +5,13 @@ export class Player {
         this.scene = scene;
         this.platforms = platforms;
 
-        // Calculate player Y position from bottom of world if not provided
+        // Calculate player Y position from bottom of world
+        const worldHeight = scene.physics.world.bounds.height;
         if (y === null) {
-            const worldHeight = scene.physics.world.bounds.height;
-            y = worldHeight - 120; // Position from the bottom of the larger world
+            y = worldHeight - 120; // Default position from the bottom of the larger world
+        } else {
+            // Convert y offset from bottom to screen coordinate
+            y = worldHeight - y;
         }
 
         // Create the player sprite
