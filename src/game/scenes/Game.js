@@ -34,7 +34,9 @@ export class Game extends Scene {
             Level10,
             Level11,
         ];
-        this.currentLevelIndex = 7;
+        // Load saved progress or start from level 1
+        // Progress is automatically saved when advancing levels and restored on game restart
+        this.currentLevelIndex = this.loadProgress();
 
         // Sequencer state management
         this.isSequencerMode = false;
@@ -44,6 +46,68 @@ export class Game extends Scene {
         this.maxLoops = 2;
         this.currentLoop = 0;
         this.isGameOver = false;
+    }
+
+    /**
+     * Save current level progress to local storage
+     */
+    saveProgress() {
+        try {
+            const progress = {
+                currentLevelIndex: this.currentLevelIndex,
+                timestamp: Date.now(),
+            };
+            localStorage.setItem(
+                "thisSongOfMine_progress",
+                JSON.stringify(progress)
+            );
+            console.log(`Progress saved: Level ${this.currentLevelIndex + 1}`);
+        } catch (error) {
+            console.warn("Failed to save progress to local storage:", error);
+        }
+    }
+
+    /**
+     * Load level progress from local storage
+     * @returns {number} The saved level index, or 0 if no save exists
+     */
+    loadProgress() {
+        try {
+            const savedData = localStorage.getItem("thisSongOfMine_progress");
+            if (savedData) {
+                const progress = JSON.parse(savedData);
+                const levelIndex = progress.currentLevelIndex || 0;
+
+                // Validate level index is within bounds
+                if (
+                    levelIndex >= 0 &&
+                    levelIndex < this.availableLevels.length
+                ) {
+                    console.log(
+                        `Loaded saved progress: Level ${levelIndex + 1}`
+                    );
+                    return levelIndex;
+                }
+            }
+        } catch (error) {
+            console.warn("Failed to load progress from local storage:", error);
+        }
+
+        // Default to level 1 (index 0) if no valid save exists
+        console.log("Starting from Level 1 (no saved progress found)");
+        return 0;
+    }
+
+    /**
+     * Clear saved progress from local storage
+     */
+    clearProgress() {
+        try {
+            localStorage.removeItem("thisSongOfMine_progress");
+            console.log("Progress cleared");
+        } catch (error) {
+            console.warn("Failed to clear progress from local storage:", error);
+        }
     }
 
     /**
@@ -199,6 +263,9 @@ export class Game extends Scene {
 
         // Listen for victory event
         EventBus.on("player-won", this.onPlayerWon, this);
+
+        // Listen for progress reset event
+        EventBus.on("reset-progress", this.onResetProgress, this);
 
         EventBus.emit("current-scene-ready", this);
     }
@@ -571,6 +638,10 @@ export class Game extends Scene {
         }
 
         this.currentLevelIndex = nextLevelIndex;
+
+        // Save progress to local storage
+        this.saveProgress();
+
         this.loadLevel(this.currentLevelIndex);
 
         // Reset game state when switching levels
@@ -598,6 +669,25 @@ export class Game extends Scene {
         });
 
         console.log(`Switched to Level ${this.currentLevelIndex + 1}`);
+    }
+
+    /**
+     * Handle progress reset event - reset to level 1 and clear saved progress
+     */
+    onResetProgress() {
+        console.log("Resetting progress to Level 1...");
+
+        // Clear saved progress from local storage
+        this.clearProgress();
+
+        // Reset to level 1
+        this.currentLevelIndex = 0;
+        this.loadLevel(this.currentLevelIndex);
+
+        // Reset game state
+        this.onGameReset();
+
+        console.log("Progress reset complete - starting from Level 1");
     }
 
     update() {
@@ -646,6 +736,7 @@ export class Game extends Scene {
         EventBus.off("toggle-collisions", this.onToggleCollisions, this);
         EventBus.off("switch-level", this.onSwitchLevel, this);
         EventBus.off("player-won", this.onPlayerWon, this);
+        EventBus.off("reset-progress", this.onResetProgress, this);
         super.destroy();
     }
 }

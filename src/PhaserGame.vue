@@ -36,6 +36,18 @@ const loadLevel = () => {
     }
 };
 
+const resetProgress = () => {
+    if (scene.value) {
+        if (
+            confirm(
+                "Are you sure you want to reset your progress? This will start the game from Level 1."
+            )
+        ) {
+            EventBus.emit("reset-progress");
+        }
+    }
+};
+
 onMounted(() => {
     game.value = StartGame("game-container");
 
@@ -81,6 +93,13 @@ defineExpose({ scene, game });
                 title="Toggle Collision Zones"
             >
                 🔲
+            </button>
+            <button
+                @click="resetProgress"
+                class="debug-button reset-button"
+                title="Reset Progress (Start from Level 1)"
+            >
+                🔄
             </button>
             <div class="level-selector">
                 <select
@@ -201,5 +220,15 @@ defineExpose({ scene, game });
     background: #333;
     color: #fff;
     padding: 5px;
+}
+
+.reset-button {
+    background: rgba(200, 0, 0, 0.8) !important;
+    border-color: #c80000 !important;
+}
+
+.reset-button:hover {
+    background: rgba(240, 0, 0, 0.9) !important;
+    border-color: #f00000 !important;
 }
 </style>
