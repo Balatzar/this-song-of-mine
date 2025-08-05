@@ -118,7 +118,7 @@ export class Level11 extends BaseLevel {
         this.creditsText = this.scene.add.text(
             camera.centerX,
             camera.centerY + 50,
-            "Game made by blatalzar\nArt by Kenney.nl and superbat3D\nIcons by Freepik.\nPlaytested by Mouchoir, Sanfé and superbat3D",
+            "Game made by blatalzar\nArt by Kenney.nl and superbat3D\nIcons by Freepik.\nPlaytested by Mouchoir, Sanfé, superbat3D and Maël'lo",
             {
                 fontSize: "24px",
                 fontFamily: "Arial",
