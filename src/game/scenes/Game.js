@@ -164,8 +164,10 @@ export class Game extends Scene {
         const gameWidth = this.sys.game.config.width;
         const gameHeight = this.sys.game.config.height;
 
-        // Set up much larger world bounds - 5x larger than viewport
-        const worldWidth = gameWidth * 5;
+        // Ensure minimum world width to accommodate all levels
+        // Level 5 needs at least 32 blocks (exit at blockX=30 + margin), so minimum world width should be 32 * 64 = 2048px
+        const minWorldWidth = 2048;
+        const worldWidth = Math.max(gameWidth * 5, minWorldWidth);
         const worldHeight = gameHeight * 5;
         this.physics.world.setBounds(0, 0, worldWidth, worldHeight);
 
