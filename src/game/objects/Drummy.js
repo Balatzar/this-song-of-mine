@@ -168,6 +168,12 @@ export class Drummy {
     update() {
         if (!this.sprite || !this.sprite.body) return;
 
+        // Stop movement when game is paused (not in sequencer mode)
+        if (!this.scene.isSequencerMode) {
+            this.sprite.setVelocityX(0);
+            return;
+        }
+
         // Check if drummy is paused
         if (this.isPaused) {
             // Ensure drummy stays still and keeps hurt texture during pause

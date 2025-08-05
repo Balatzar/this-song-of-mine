@@ -158,6 +158,12 @@ export class Snail {
     update() {
         if (!this.sprite || !this.sprite.body) return;
 
+        // Stop movement when game is paused (not in sequencer mode)
+        if (!this.scene.isSequencerMode) {
+            this.sprite.setVelocityX(0);
+            return;
+        }
+
         // Check patrol bounds
         const leftBound = this.startX - this.patrolWidth / 2;
         const rightBound = this.startX + this.patrolWidth / 2;
