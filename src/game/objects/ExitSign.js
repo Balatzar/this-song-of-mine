@@ -28,7 +28,10 @@ export class ExitSign {
         this.sprite = scene.physics.add.sprite(0, 0, "sign_exit");
 
         // Make the collision box taller (width, height)
-        this.sprite.body.setSize(this.sprite.width, this.sprite.height * 2);
+        this.sprite.body.setSize(
+            this.sprite.width + 20,
+            this.sprite.height * 2
+        );
 
         // Make it static (doesn't fall or move)
         this.sprite.body.setImmovable(true);

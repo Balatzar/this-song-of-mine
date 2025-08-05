@@ -263,6 +263,11 @@ export class Player {
      * @param {Array} activeBeats - Array of boolean values for each drum track
      */
     handleSequencerMovement(activeBeats) {
+        // Check if game is over - freeze player completely
+        if (this.scene.isGameOver) {
+            return;
+        }
+
         // Only process if player exists
         if (!this.sprite) return;
 
@@ -439,6 +444,12 @@ export class Player {
      * Always uses the unified movement logic that handles both real keys and simulated input
      */
     update() {
+        if (this.scene.isGameOver) {
+            this.sprite.body.setEnable(false);
+            this.sprite.anims.stop();
+            return;
+        }
+
         this.handleManualMovement();
 
         // Add trace point if we're recording
@@ -471,6 +482,11 @@ export class Player {
         this.sprite.setPosition(this.initialPosition.x, this.initialPosition.y);
         this.sprite.setVelocity(0, 0);
         this.sprite.setFlipX(this.initialPosition.flipX);
+
+        // Re-enable physics if it was disabled during game over
+        if (this.sprite.body && !this.sprite.body.enable) {
+            this.sprite.body.setEnable(true);
+        }
 
         // Reset player state
         if (this.isDashing) {
