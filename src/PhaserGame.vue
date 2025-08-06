@@ -10,7 +10,6 @@ const game = ref();
 // Debug toggle states - disabled by default, only available in dev mode
 const isDevMode = import.meta.env.DEV;
 const showGrid = ref(false);
-const showCollisions = ref(false);
 const selectedLevel = ref(0);
 
 const emit = defineEmits(["current-active-scene"]);
@@ -20,13 +19,6 @@ const toggleGrid = () => {
     showGrid.value = !showGrid.value;
     if (scene.value) {
         EventBus.emit("toggle-grid", showGrid.value);
-    }
-};
-
-const toggleCollisions = () => {
-    showCollisions.value = !showCollisions.value;
-    if (scene.value) {
-        EventBus.emit("toggle-collisions", showCollisions.value);
     }
 };
 
@@ -87,13 +79,7 @@ defineExpose({ scene, game });
             >
                 📏
             </button>
-            <button
-                @click="toggleCollisions"
-                :class="['debug-button', { active: showCollisions }]"
-                title="Toggle Collision Zones"
-            >
-                🔲
-            </button>
+
             <button
                 @click="resetProgress"
                 class="debug-button reset-button"
