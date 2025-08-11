@@ -1482,11 +1482,6 @@ onUnmounted(() => {
         padding-bottom: 5px;
     }
 
-    /* Hide the debug button on mobile */
-    .control-btn.debug-btn {
-        display: none;
-    }
-
     /* Hide labels in loop counter on mobile */
     .loop-counter label {
         display: none;
